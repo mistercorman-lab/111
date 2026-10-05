@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Рабочие документы</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Crect%20width='64'%20height='64'%20rx='14'%20fill='%232563eb'/%3E%3Ctext%20x='32'%20y='45'%20font-family='Arial,Helvetica,sans-serif'%20font-size='34'%20font-weight='700'%20fill='%23ffffff'%20text-anchor='middle'%3E%D0%94%D0%9A%3C/text%3E%3C/svg%3E">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    background: #eef1f6;
+    color: #1c2430;
+  }
+
+  .app { display: flex; min-height: 100vh; }
+
+  .sidebar {
+    width: 250px; flex-shrink: 0;
+    background: #1e293b;
+    color: #cbd5e1;
+    padding: 22px 14px;
+    display: flex; flex-direction: column; gap: 22px;
+  }
+  .sidebar-brand {
+    display: flex; align-items: center; gap: 10px;
+    padding: 0 8px;
+  }
+  .sidebar-brand .mark {
+    width: 36px; height: 36px; flex-shrink: 0;
+    background: #2563eb; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 15px;
+  }
+  .sidebar-brand .title { color: #fff; font-size: 14px; font-weight: 600; line-height: 1.2; }
+  .sidebar-brand .subtitle { color: #94a3b8; font-size: 11px; margin-top: 2px; }
+
+  .nav { display: flex; flex-direction: column; gap: 4px; }
+  .nav-label {
+    font-size: 10.5px; text-transform: uppercase;
+    letter-spacing: .08em; color: #64748b;
+    padding: 4px 8px 6px;
+  }
+  .nav-btn {
+    display: block; width: 100%; text-align: left;
+    padding: 11px 12px;
+    background: transparent; color: #cbd5e1;
+    border: none; border-radius: 8px;
+    font-family: inherit; font-size: 13.5px; font-weight: 500;
+    cursor: pointer; transition: .15s;
+    border-left: 3px solid transparent;
+  }
+  .nav-btn:hover { background: #334155; color: #fff; }
+  .nav-btn.active { background: #334155; color: #fff; border-left-color: #3b82f6; }
+
+  .main { flex: 1; padding: 24px; overflow: auto; }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+  .page-head { margin-bottom: 20px; }
+  .page-head h1 { font-size: 22px; margin: 0 0 4px; }
+  .page-head .sub { color: #64748b; font-size: 14px; }
+
+  .layout { display: grid; grid-template-columns: 440px 1fr; gap: 22px; align-items: start; }
+  @media (max-width: 1100px) { .layout { grid-template-columns: 1fr; } }
+
+  .card {
+    background: #fff; border-radius: 14px; padding: 22px;
+    box-shadow: 0 2px 14px rgba(20,40,80,.08);
+  }
+  .card h2 {
+    font-size: 14px; margin: 0 0 16px;
+    text-transform: uppercase; letter-spacing: .05em; color: #475569;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card h2 .badge {
+    background: #dbeafe; color: #1e40af;
+    font-size: 10px; font-weight: 700;
+    padding: 2px 6px; border-radius: 4px;
+    text-transform: none; letter-spacing: 0;
+  }
+
+  .field { margin-bottom: 14px; }
+  .field label {
+    display: block; font-size: 12.5px; font-weight: 600;
+    color: #334155; margin-bottom: 6px;
+  }
+  .field input, .field select {
+    width: 100%; padding: 11px 13px;
+    font-size: 14px; font-family: inherit;
+    border: 1px solid #cbd5e1; border-radius: 9px;
+    outline: none; transition: .15s;
+    background: #fbfcfe; color: #1c2430;
+  }
+  .field input:focus, .field select:focus {
+    border-color: #3b82f6; background: #fff;
+    box-shadow: 0 0 0 3px rgba(59,130,246,.15);
+  }
+  .field input::placeholder { color: #94a3b8; }
+
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .btn-find {
+    width: 100%;
+    padding: 13px 18px; margin-top: 6px;
+    font-size: 15px; font-weight: 600; font-family: inherit;
+    background: #2563eb; color: #fff;
+    border: none; border-radius: 10px; cursor: pointer;
+    transition: .15s;
+  }
+  .btn-find:hover:not(:disabled) { background: #1d4ed8; }
+  .btn-find:disabled { opacity: .6; cursor: wait; }
+
+  .api-msg {
+    margin-top: 12px; font-size: 12.5px; line-height: 1.55;
+    display: none;
+    padding: 9px 11px; border-radius: 8px;
+  }
+  .api-msg.show    { display: block; }
+  .api-msg.loading { color: #1e40af; background: #eff6ff; }
+  .api-msg.ok      { color: #166534; background: #f0fdf4; }
+  .api-msg.err     { color: #b91c1c; background: #fef2f2; }
+
+  .status {
+    margin-top: 14px; padding: 10px 12px; border-radius: 9px;
+    font-size: 12.5px; line-height: 1.55;
+    background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;
+    display: none;
+  }
+  .status.ok   { background: #f0fdf4; border-color: #bbf7d0; color: #166534; }
+  .status.warn { background: #fffbeb; border-color: #fde68a; color: #92400e; }
+  .status .miss { color: #b91c1c; font-weight: 600; }
+
+  .buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+  .row { display: flex; gap: 10px; }
+  .row > * { flex: 1; }
+
+  .btn-sec {
+    font-family: inherit; font-size: 14px; font-weight: 600; padding: 12px 16px;
+    border-radius: 10px; cursor: pointer; transition: .15s;
+    background: #eef2f7; color: #334155; border: 1px solid #d7dee8;
+  }
+  .btn-sec:hover:not(:disabled) { background: #e2e8f0; }
+  .btn-sec:disabled { opacity: .45; cursor: not-allowed; }
+
+  .btn-link {
+    background: none; border: none; padding: 4px 0;
+    font-size: 12px; color: #64748b;
+    text-decoration: underline; cursor: pointer;
+    font-family: inherit;
+  }
+  .btn-link:hover { color: #1d4ed8; }
+
+  .preview-shell {
+    background: #fff; border-radius: 14px;
+    box-shadow: 0 2px 14px rgba(20,40,80,.08); padding: 14px;
+  }
+  .preview-label {
+    font-size: 12px; text-transform: uppercase;
+    letter-spacing: .05em; color: #94a3b8;
+    margin: 4px 0 12px 6px;
+  }
+  .sheet {
+    width: 100%; aspect-ratio: 210 / 297;
+    overflow: auto; background: #fff;
+    border: 1px solid #e2e8f0; border-radius: 6px;
+    padding: 7% 7% 7% 8%;
+  }
+
+  .paper {
+    font-family: "Times New Roman", Times, serif;
+    font-size: 12pt; line-height: 1.5; color: #000;
+  }
+  .paper p { margin: 0; }
+
+  /* ------- Письмо ЧЗ ------- */
+  #paper .head { width: 100%; border-collapse: collapse; }
+  #paper .head td { vertical-align: top; padding: 0; }
+  #paper .head .left { width: 52%; padding-right: 14px; }
+  #paper .head .right { width: 48%; padding-left: 22px; }
+  #paper .head .left p { margin: 0 0 8px; text-align: left; }
+  #paper .head .right p { margin: 0 0 4px; text-align: left; }
+  #paper h2 {
+    text-align: center; font-size: 12pt; font-weight: bold;
+    margin: 0 0 24px; letter-spacing: .02em;
+  }
+  #paper .body { margin: 0 0 14px; text-align: justify; text-indent: 1.25cm; }
+  #paper .sign { width: 100%; border-collapse: collapse; }
+  #paper .sign td { vertical-align: top; padding: 0; }
+  #paper .sign .s-left { width: 44%; padding-right: 12px; }
+  #paper .sign .s-right { width: 56%; padding-left: 26px; }
+  #paper .sign p { margin: 0 0 16px; text-align: left; }
+  #paper .sign p:last-child { margin-bottom: 0; }
+  #paper .sign .who { margin-bottom: 22px; }
+  #paper .sign .mp { margin-top: 22px; }
+
+  /* ------- Служебная записка ------- */
+  #vacPaper { font-family: "Times New Roman", Times, serif; font-size: 12pt; line-height: 1.5; color: #000; }
+  #vacPaper p { margin: 0; }
+  #vacPaper .addressee { text-align: right; margin-bottom: 40px; line-height: 1.35; }
+  #vacPaper .title {
+    text-align: center; font-weight: bold;
+    font-size: 13pt; margin: 30px 0 40px;
+    letter-spacing: .06em;
+  }
+  #vacPaper .body { text-align: justify; text-indent: 1.25cm; margin-bottom: 10px; }
+  #vacPaper .date-line { margin-bottom: 22px; text-align: left; }
+  #vacPaper .sign-role { margin-bottom: 8px; }
+  #vacPaper .sign-line { text-align: left; }
+
+  /* ------- Заявление на отгул ------- */
+  #otgPaper { font-family: "Times New Roman", Times, serif; font-size: 12pt; line-height: 1.5; color: #000; }
+  #otgPaper p { margin: 0; }
+  #otgPaper .addressee { text-align: right; line-height: 1.35; }
+  #otgPaper .title {
+    text-align: center; font-weight: bold;
+    font-size: 13pt; letter-spacing: .06em;
+    margin: 0;
+  }
+  #otgPaper .body { text-align: justify; text-indent: 1.25cm; }
+  #otgPaper .sign-row { text-align: left; }
+  #otgPaper .chief-title { text-align: left; }
+  #otgPaper .chief-line { text-align: left; }
+
+  .empty-hint {
+    color: #94a3b8; font-family: sans-serif;
+    font-size: 14px; text-align: center; margin-top: 90px;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="mark">ДК</div>
+      <div>
+        <div class="title">Рабочие документы</div>
+        <div class="subtitle">ООО «Проект 111»</div>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <div class="nav-label">Документы</div>
+      <button class="nav-btn active" data-view="codes">Вывод кодов ЧЗ</button>
+      <button class="nav-btn" data-view="vacation">Замещение в отпуске</button>
+      <button class="nav-btn" data-view="otgul">Отгул</button>
+    </nav>
+  </aside>
+
+  <main class="main">
+
+    <!-- ============ ВИД 1: ВЫВОД КОДОВ ЧЗ ============ -->
+    <section class="view active" id="view-codes">
+      <div class="page-head">
+        <h1>Письмо о выводе кодов маркировки</h1>
+        <div class="sub">Введите ИНН, № заказа и дату — приложение получит реквизиты с Checko и сформирует письмо.</div>
+      </div>
+
+      <div class="layout">
+        <div class="card">
+          <h2>Данные <span class="badge">Checko API</span></h2>
+
+          <div class="field">
+            <label for="innInput">ИНН клиента</label>
+            <input id="innInput" placeholder="7743798826" maxlength="12" inputmode="numeric" autocomplete="off">
+          </div>
+
+          <div class="field">
+            <label for="orderInput">Заказ №</label>
+            <input id="orderInput" placeholder="7985905" inputmode="numeric" autocomplete="off">
+          </div>
+
+          <div class="field">
+            <label for="dateInput">Дата счёта</label>
+            <input id="dateInput" type="date">
+          </div>
+
+          <button class="btn-find" id="btnFind" type="button">Найти</button>
+
+          <div class="api-msg" id="apiMsg"></div>
+          <div class="status" id="status"></div>
+
+          <div class="buttons">
+            <div class="row">
+              <button class="btn-sec" id="btnDownload" disabled>Скачать .doc</button>
+              <button class="btn-sec" id="btnPrint" disabled>Печать / PDF</button>
+            </div>
+            <button class="btn-sec" id="btnClear">Очистить</button>
+            <button class="btn-link" id="btnDebug" type="button">Показать ответ API в консоли</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="preview-shell">
+            <div class="preview-label">Предпросмотр</div>
+            <div class="sheet">
+              <div id="paper" class="paper">
+                <div class="empty-hint">Заполните поля слева и нажмите «Найти»</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ВИД 2: ЗАМЕЩЕНИЕ В ОТПУСКЕ ============ -->
+    <section class="view" id="view-vacation">
+      <div class="page-head">
+        <h1>Служебная записка о замещении в отпуске</h1>
+        <div class="sub">Выберите сотрудников из списка — записка сформируется автоматически.</div>
+      </div>
+
+      <div class="layout">
+        <div class="card">
+          <h2>Данные записки</h2>
+
+          <div class="field">
+            <label for="vacFio">Кто заменял</label>
+            <select id="vacFio">
+              <option value="">— выберите —</option>
+              <option value="Карманова Дмитрия Сергеевича">Карманова Дмитрия Сергеевича</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="vacReplace">Кого заменял</label>
+            <select id="vacReplace">
+              <option value="">— выберите —</option>
+              <option value="Немировской Анастасии Дмитриевны">Немировской Анастасии Дмитриевны</option>
+              <option value="Моцного Дмитрия Александровича">Моцного Дмитрия Александровича</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="vacPost">Должность</label>
+            <select id="vacPost">
+              <option value="">— выберите —</option>
+              <option value="Менеджера">Менеджера</option>
+              <option value="Специалиста">Специалиста</option>
+            </select>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="vacFrom">Замещал с</label>
+              <input id="vacFrom" type="date">
+            </div>
+            <div class="field">
+              <label for="vacTo">Замещал по</label>
+              <input id="vacTo" type="date">
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="vacPayMonth">Месяц выплаты</label>
+              <select id="vacPayMonth"></select>
+            </div>
+            <div class="field">
+              <label for="vacPayYear">Год выплаты</label>
+              <input id="vacPayYear" inputmode="numeric" maxlength="4" autocomplete="off">
+            </div>
+          </div>
+
+          <button class="btn-find" id="btnVacCreate" type="button">Создать записку</button>
+
+          <div class="status" id="vacStatus"></div>
+
+          <div class="buttons">
+            <div class="row">
+              <button class="btn-sec" id="btnVacDownload" disabled>Скачать .doc</button>
+              <button class="btn-sec" id="btnVacPrint" disabled>Печать / PDF</button>
+            </div>
+            <button class="btn-sec" id="btnVacClear">Очистить</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="preview-shell">
+            <div class="preview-label">Предпросмотр</div>
+            <div class="sheet">
+              <div id="vacPaper">
+                <div class="empty-hint">Выберите сотрудников и нажмите «Создать записку»</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ВИД 3: ОТГУЛ ============ -->
+    <section class="view" id="view-otgul">
+      <div class="page-head">
+        <h1>Заявление на отгул</h1>
+        <div class="sub">Заполните поля — заявление сформируется автоматически.</div>
+      </div>
+
+      <div class="layout">
+        <div class="card">
+          <h2>Данные заявления</h2>
+
+          <div class="field">
+            <label for="otgFio">ФИО</label>
+            <select id="otgFio">
+              <option value="">— выберите —</option>
+              <option value="Карманов Дмитрий Сергеевич"
+                      data-gen="Карманова Дмитрия Сергеевича"
+                      data-short="Карманов Д. С.">
+                Карманов Дмитрий Сергеевич
+              </option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="otgPost">Должность</label>
+            <select id="otgPost">
+              <option value="">— выберите —</option>
+              <option value="Менеджер" data-gen="Менеджера">Менеджер</option>
+              <option value="Специалист" data-gen="Специалиста">Специалист</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="otgRest">Дата отдыха</label>
+            <input id="otgRest" type="date">
+          </div>
+
+          <div class="field">
+            <label for="otgOver">Дата переработки</label>
+            <input id="otgOver" type="date">
+          </div>
+
+          <button class="btn-find" id="btnOtgCreate" type="button">Создать заявление</button>
+
+          <div class="status" id="otgStatus"></div>
+
+          <div class="buttons">
+            <div class="row">
+              <button class="btn-sec" id="btnOtgDownload" disabled>Скачать .doc</button>
+              <button class="btn-sec" id="btnOtgPrint" disabled>Печать / PDF</button>
+            </div>
+            <button class="btn-sec" id="btnOtgClear">Очистить</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="preview-shell">
+            <div class="preview-label">Предпросмотр</div>
+            <div class="sheet">
+              <div id="otgPaper">
+                <div class="empty-hint">Заполните поля слева и нажмите «Создать заявление»</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+
+  const esc = s => String(s == null ? '' : s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+  const MONTHS_GEN = [
+    'января','февраля','марта','апреля','мая','июня',
+    'июля','августа','сентября','октября','ноября','декабря'
+  ];
+  const MONTHS_NOM = [
+    'январь','февраль','март','апрель','май','июнь',
+    'июль','август','сентябрь','октябрь','ноябрь','декабрь'
+  ];
+
+  function formatDateRu(iso) {
+    if (!iso) return '';
+    const m = String(iso).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!m) return iso;
+    const [, y, mo, d] = m;
+    return '«' + d + '» ' + MONTHS_GEN[parseInt(mo,10)-1] + ' ' + y + ' г.';
+  }
+  function formatDateRuLong(iso) {
+    if (!iso) return '';
+    const m = String(iso).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!m) return iso;
+    const [, y, mo, d] = m;
+    return '«' + d + '» ' + MONTHS_GEN[parseInt(mo,10)-1] + ' ' + y + ' года';
+  }
+  function isoToRu(iso) {
+    if (!iso) return '';
+    const m = String(iso).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!m) return iso;
+    return m[3] + '.' + m[2] + '.' + m[1];
+  }
+  // Первое число того же месяца, что и iso (YYYY-MM-01)
+  function firstOfMonthISO(iso) {
+    if (!iso) return '';
+    const m = String(iso).match(/^(\d{4})-(\d{2})/);
+    if (!m) return '';
+    return m[1] + '-' + m[2] + '-01';
+  }
+
+  // ============ Переключение видов ============
+  const navButtons = document.querySelectorAll('.nav-btn');
+  const views = document.querySelectorAll('.view');
+  function switchView(name) {
+    navButtons.forEach(b => b.classList.toggle('active', b.dataset.view === name));
+    views.forEach(v => v.classList.toggle('active', v.id === 'view-' + name));
+  }
+  navButtons.forEach(btn => {
+    btn.addEventListener('click', () => switchView(btn.dataset.view));
+  });
+
+  // ============================================================
+  //              МОДУЛЬ 1: ВЫВОД КОДОВ ЧЗ
+  // ============================================================
+  const CHECKO_API_KEY = 'xETljoqfth6gO2yz';
+  const CHECKO_COMPANY_URL      = 'https://api.checko.ru/v2/company';
+  const CHECKO_ENTREPRENEUR_URL = 'https://api.checko.ru/v2/entrepreneur';
+
+  function shortFio(full) {
+    if (!full) return '';
+    const parts = String(full).trim().split(/\s+/).filter(Boolean);
+    if (parts.length < 2) return full;
+    const [fam, ...rest] = parts;
+    return fam + ' ' + rest.slice(0, 2).map(w => w[0] ? w[0].toUpperCase() + '.' : '').join('');
+  }
+  function deepFind(obj, keys, depth) {
+    depth = depth || 0;
+    if (!obj || typeof obj !== 'object' || depth > 5) return '';
+    for (const k of keys) {
+      const v = obj[k];
+      if (v != null && typeof v !== 'object' && String(v).trim()) return String(v).trim();
+    }
+    for (const k in obj) {
+      const v = obj[k];
+      if (v && typeof v === 'object') {
+        const found = deepFind(v, keys, depth + 1);
+        if (found) return found;
+      }
+    }
+    return '';
+  }
+  function pickFirst(obj, keys) {
+    if (!obj || typeof obj !== 'object') return '';
+    for (const k of keys) {
+      const v = obj[k];
+      if (v != null && typeof v !== 'object' && String(v).trim()) return String(v).trim();
+    }
+    return '';
+  }
+
+  let lastRawResponse = null;
+  function setApiMsg(text, kind) {
+    const el = $('apiMsg');
+    el.textContent = text || '';
+    el.className = 'api-msg' + (text ? ' show ' + (kind || '') : '');
+  }
+
+  async function fetchFromChecko(inn) {
+    const isEntrepreneur = String(inn).length === 12;
+    const baseUrl = isEntrepreneur ? CHECKO_ENTREPRENEUR_URL : CHECKO_COMPANY_URL;
+    const url = baseUrl + '?key=' + encodeURIComponent(CHECKO_API_KEY)
+                         + '&inn=' + encodeURIComponent(inn);
+    const resp = await fetch(url, { method: 'GET' });
+    if (!resp.ok) throw new Error('Сервис вернул код ' + resp.status);
+    const json = await resp.json();
+    lastRawResponse = json;
+
+    if (!json || !json.meta || json.meta.status !== 'ok') {
+      const msg = (json && json.meta && json.meta.message) || 'Компания не найдена';
+      throw new Error(msg);
+    }
+    if (!json.data) throw new Error('Пустой ответ — компания не найдена');
+    return { data: json.data, isEntrepreneur };
+  }
+
+  function pickCompanyFields(data, fallbackInn, isEntrepreneur) {
+    const d = data || {};
+    let client = pickFirst(d, ['НаимСокр', 'НаимПолн', 'Наименование', 'ShortName', 'Name']);
+    if (!client && isEntrepreneur) {
+      client = pickFirst(d, ['ФИО', 'ФИОПолн', 'FullName']) || '';
+      if (client && !/^ИП\b/i.test(client)) client = 'ИП ' + client;
+    }
+    const inn = pickFirst(d, ['ИНН', 'INN']) || fallbackInn;
+    const kpp = isEntrepreneur ? '' : pickFirst(d, ['КПП', 'KPP']);
+
+    const adrObj = d['ЮрАдрес'] || d['Адрес'] || d['Address'] || d;
+    let address = pickFirst(adrObj, ['АдресРФ', 'Адрес', 'АдресПолн', 'FullAddress', 'Address']);
+    if (!address) address = pickFirst(d, ['АдресРФ', 'Адрес', 'АдресПолн']);
+
+    let post = '', fioFull = '';
+    if (isEntrepreneur) {
+      post = 'Индивидуальный предприниматель';
+      fioFull = pickFirst(d, ['ФИО', 'ФИОПолн', 'FullName']) || client.replace(/^ИП\s+/, '');
+    } else {
+      let ruk = d['Руковод'] || d['Руководитель'] || d['Руководители'] || null;
+      if (Array.isArray(ruk) && ruk.length) ruk = ruk[0];
+      if (ruk && typeof ruk === 'object') {
+        post    = pickFirst(ruk, ['Должн', 'Должность', 'НаимДолжн', 'Position', 'Post']);
+        fioFull = pickFirst(ruk, ['ФИО', 'ФИОПолн', 'FullName', 'Name']);
+      }
+      if (!post)    post    = deepFind(d, ['Должн', 'Должность', 'НаимДолжн']);
+      if (!fioFull) fioFull = deepFind(d, ['ФИО', 'ФИОПолн']);
+      if (!post && fioFull) post = 'Генеральный директор';
+    }
+    return {
+      client : String(client).trim(),
+      inn    : String(inn).trim(),
+      kpp    : String(kpp).trim(),
+      address: String(address).trim(),
+      post   : String(post).trim(),
+      fio    : shortFio(fioFull),
+      isEntrepreneur: !!isEntrepreneur
+    };
+  }
+
+  const FALLBACK = {
+    client : '________________________________',
+    inn    : '____________',
+    kpp    : '____________',
+    address: '________________________________',
+    invoice: '____________',
+    invdate: '____________',
+    post   : '[Должность руководителя клиента]',
+    fio    : '[Фамилия И.О.]'
+  };
+  const GAP = '<br><br><br><br><br><br><br><br>';
+
+  function buildLetter(d) {
+    const today = new Date().toLocaleDateString('ru-RU');
+    const v = k => d[k] ? esc(d[k]) : FALLBACK[k];
+    const innKppLine = d.isEntrepreneur
+      ? `ИНН ${v('inn')}`
+      : `ИНН ${v('inn')} / КПП ${v('kpp')}`;
+
+    return `
+      <table class="head">
+        <tr>
+          <td class="left">
+            <p>Полное наименование<br>организации-клиента: <b>${v('client')}</b></p>
+            <p>${innKppLine}</p>
+            <p>Адрес: ${v('address')}</p>
+          </td>
+          <td class="right">
+            <p>Управляющему ООО «ПРОЕКТ 111»</p>
+            <p>Генеральному директору</p>
+            <p>Цибину Н.А.</p>
+          </td>
+        </tr>
+      </table>
+
+      ${GAP}
+
+      <h2>Информационное письмо</h2>
+
+      <p class="body">Мы, ${v('client')} (ИНН ${v('inn')}), настоящим письмом информируем,
+        что товар с кодами маркировки, приобретаемый по УПД/счёту
+        № ${v('invoice')} от ${v('invdate')}, будет использован исключительно
+        для собственных нужд нашей организации и не предназначен для дальнейшей
+        реализации (перепродажи) третьим лицам.</p>
+
+      <p class="body">В связи с отсутствием факта последующей перепродажи просим
+        не передавать коды маркировки в составе первичной документации и поручаем
+        ООО «ПРОЕКТ 111» осуществить вывод кодов маркировки из оборота по схеме
+        «На собственные нужды» самостоятельно, с обязательным указанием ИНН нашей
+        организации — ${v('inn')}.</p>
+
+      ${GAP}
+
+      <table class="sign">
+        <tr>
+          <td class="s-left">
+            <p>Дата: ${today}</p>
+          </td>
+          <td class="s-right">
+            <p class="who">${v('post')} / ${v('fio')}</p>
+            <p>Подпись: ____________________</p>
+            <p class="mp">М.П.</p>
+          </td>
+        </tr>
+      </table>
+    `;
+  }
+
+  function showStatus(p) {
+    const need = [
+      ['client',  'название'],
+      ['inn',     'ИНН'],
+      ['address', 'адрес'],
+      ['invoice', '№ счёта'],
+      ['invdate', 'дата счёта']
+    ];
+    if (!p.isEntrepreneur) need.splice(2, 0, ['kpp', 'КПП']);
+    const ok = [], miss = [];
+    need.forEach(([k, label]) => (p[k] ? ok : miss).push(label));
+
+    const s = $('status');
+    s.style.display = 'block';
+    if (!miss.length) {
+      s.className = 'status ok';
+      let extra = '';
+      if (p.post || p.fio) extra = ' · руководитель: <b>' + esc((p.post + ' ' + p.fio).trim()) + '</b>';
+      const typeLabel = p.isEntrepreneur ? ' (ИП, КПП не требуется)' : '';
+      s.innerHTML = '✓ Готово' + typeLabel + ': <b>' + ok.join(', ') + '</b>' + extra;
+    } else {
+      s.className = 'status warn';
+      s.innerHTML = 'Не найдено: <span class="miss">' + miss.join(', ') + '</span>. ' +
+        'Эти места останутся пустыми — впишите их в документ вручную.';
+    }
+  }
+
+  let currentHTML = '';
+  let lastCompany = null;
+
+  function collectFormData(company) {
+    const c = company || {};
+    const order = $('orderInput').value.trim();
+    const date  = isoToRu($('dateInput').value);
+    return {
+      client : c.client  || '',
+      inn    : c.inn     || $('innInput').value.trim(),
+      kpp    : c.kpp     || '',
+      address: c.address || '',
+      post   : c.post    || '',
+      fio    : c.fio     || '',
+      invoice: order || '',
+      invdate: date  || '',
+      isEntrepreneur: !!c.isEntrepreneur
+    };
+  }
+
+  function render(company) {
+    if (company) lastCompany = company;
+    const data = collectFormData(lastCompany);
+    currentHTML = buildLetter(data);
+    $('paper').innerHTML = currentHTML;
+    $('btnDownload').disabled = false;
+    $('btnPrint').disabled = false;
+    showStatus(data);
+  }
+
+  async function handleFind() {
+    const inn = $('innInput').value.trim();
+    if (!/^\d{10}$|^\d{12}$/.test(inn)) {
+      setApiMsg('ИНН должен содержать 10 или 12 цифр', 'err');
+      return;
+    }
+    $('btnFind').disabled = true;
+    $('btnFind').textContent = 'Поиск…';
+    setApiMsg('Запрос к Checko…', 'loading');
+
+    try {
+      const { data, isEntrepreneur: isIp } = await fetchFromChecko(inn);
+      const company = pickCompanyFields(data, inn, isIp);
+      if (!company.client && !company.kpp && !company.address) {
+        throw new Error('Сервис вернул ответ без данных');
+      }
+      const label = isIp ? 'ИП' : 'организация';
+      const kppInfo = isIp ? '' : (company.kpp ? ' · КПП ' + company.kpp : '');
+      const bossInfo = (company.post || company.fio)
+        ? ' · ' + ((company.post || '') + ' ' + (company.fio || '')).trim()
+        : ' · руководитель не определён';
+      setApiMsg('✓ Найдено (' + label + '): ' + (company.client || '—') + kppInfo + bossInfo, 'ok');
+      render(company);
+    } catch (err) {
+      console.error(err);
+      let msg = err.message || 'Ошибка запроса';
+      if (/Failed to fetch|NetworkError/i.test(msg)) {
+        msg = 'Не удалось связаться с api.checko.ru. Проверьте интернет или настройки доступа.';
+      }
+      setApiMsg('✗ ' + msg, 'err');
+      $('status').style.display = 'none';
+    } finally {
+      $('btnFind').disabled = false;
+      $('btnFind').textContent = 'Найти';
+    }
+  }
+
+  function downloadDoc(html, filename) {
+    const head = `<html xmlns:o="urn:schemas-microsoft-com:office:office"
+        xmlns:w="urn:schemas-microsoft-com:office:word"
+        xmlns="http://www.w3.org/TR/REC-html40">
+      <head><meta charset="utf-8"><title>Документ</title>
+      <!--[if gte mso 9]><xml><w:WordDocument>
+        <w:View>Print</w:View><w:Zoom>100</w:Zoom>
+      </w:WordDocument></xml><![endif]-->
+      <style>
+        @page { size: A4; margin: 2cm 2cm 2cm 2.5cm; }
+        body { font-family: "Times New Roman", serif; font-size: 12pt; line-height: 1.5; }
+        p { margin: 0; }
+        table.head { width: 100%; border-collapse: collapse; }
+        table.head td { vertical-align: top; padding: 0; }
+        table.head td.left  { width: 52%; padding-right: 14px; }
+        table.head td.right { width: 48%; padding-left: 22px; }
+        table.head td.left  p { margin: 0 0 8px; text-align: left; }
+        table.head td.right p { margin: 0 0 4px; text-align: left; }
+        h2 { text-align: center; font-size: 12pt; margin: 0 0 24px; }
+        p.body { margin: 0 0 14px; text-align: justify; text-indent: 1.25cm; }
+        table.sign { width: 100%; border-collapse: collapse; }
+        table.sign td { vertical-align: top; padding: 0; }
+        table.sign td.s-left  { width: 44%; padding-right: 12px; }
+        table.sign td.s-right { width: 56%; padding-left: 26px; }
+        table.sign p { margin: 0 0 16px; text-align: left; }
+        table.sign p.who { margin-bottom: 22px; }
+        table.sign p.mp  { margin-top: 22px; margin-bottom: 0; }
+        .addressee { text-align: right; margin-bottom: 40px; line-height: 1.35; }
+        .title { text-align: center; font-weight: bold; font-size: 13pt; margin: 30px 0 40px; letter-spacing: .06em; }
+        .date-line { margin-bottom: 22px; }
+        .sign-role { margin-bottom: 8px; }
+        .addressee-right { text-align: right; line-height: 1.35; }
+        .title-otg { text-align: center; font-weight: bold; font-size: 13pt; letter-spacing: .06em; margin: 0; }
+        .body-otg { text-align: justify; text-indent: 1.25cm; margin: 0; }
+        .sign-row { text-align: left; margin: 0; }
+        .chief-title { margin: 0; }
+        .chief-line { margin: 0; }
+      </style></head><body>`;
+
+    const blob = new Blob(
+      ['\ufeff' + head + html + '</body></html>'],
+      { type: 'application/msword;charset=utf-8' }
+    );
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 3000);
+  }
+
+  function download() {
+    const data = collectFormData(lastCompany);
+    const safeName = ((data.client || 'Письмо')
+      .replace(/[«»"]/g, '')
+      .replace(/[\\/:*?<>|]/g, '')
+      .replace(/\s+/g, ' ').trim().slice(0, 60)) || 'Письмо';
+    downloadDoc(buildLetter(data), 'Информационное письмо — ' + safeName + '.doc');
+  }
+
+  function printLetter() {
+    render(lastCompany);
+    const w = window.open('', '_blank');
+    w.document.write(`<html><head><meta charset="utf-8"><title>Информационное письмо</title>
+      <style>
+        @page { size: A4; margin: 2cm 2cm 2cm 2.5cm; }
+        body { font-family: "Times New Roman", serif; font-size: 12pt; line-height: 1.5; }
+        p { margin: 0; }
+        table.head { width: 100%; border-collapse: collapse; }
+        table.head td { vertical-align: top; padding: 0; }
+        table.head td.left  { width: 52%; padding-right: 14px; }
+        table.head td.right { width: 48%; padding-left: 22px; }
+        table.head td.left  p { margin: 0 0 8px; text-align: left; }
+        table.head td.right p { margin: 0 0 4px; text-align: left; }
+        h2 { text-align: center; font-size: 12pt; margin: 0 0 24px; }
+        p.body { margin: 0 0 14px; text-align: justify; text-indent: 1.25cm; }
+        table.sign { width: 100%; border-collapse: collapse; }
+        table.sign td { vertical-align: top; padding: 0; }
+        table.sign td.s-left  { width: 44%; padding-right: 12px; }
+        table.sign td.s-right { width: 56%; padding-left: 26px; }
+        table.sign p { margin: 0 0 16px; text-align: left; }
+        table.sign p.who { margin-bottom: 22px; }
+        table.sign p.mp  { margin-top: 22px; margin-bottom: 0; }
+      </style></head><body>${currentHTML}</body></html>`);
+    w.document.close();
+    w.focus();
+    setTimeout(() => w.print(), 300);
+  }
+
+  $('btnFind').addEventListener('click', handleFind);
+  $('innInput').addEventListener('input', e => {
+    e.target.value = e.target.value.replace(/\D/g, '').slice(0, 12);
+  });
+  $('innInput').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); handleFind(); } });
+  $('orderInput').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); handleFind(); } });
+  $('dateInput').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); handleFind(); } });
+  $('btnDownload').addEventListener('click', download);
+  $('btnPrint').addEventListener('click', printLetter);
+  $('btnDebug').addEventListener('click', () => {
+    if (!lastRawResponse) { alert('Сначала нажмите «Найти» — тогда будет что показать.'); return; }
+    console.log('[Checko API] последний ответ целиком:', lastRawResponse);
+    console.log('[Checko API] data:', lastRawResponse.data);
+    alert('Ответ API выведен в консоль браузера.\nОткройте DevTools → Console (F12).');
+  });
+  $('btnClear').addEventListener('click', () => {
+    $('innInput').value = '';
+    $('orderInput').value = '';
+    $('dateInput').value = '';
+    setApiMsg('');
+    lastCompany = null;
+    lastRawResponse = null;
+    currentHTML = '';
+    $('paper').innerHTML = '<div class="empty-hint">Заполните поля слева и нажмите «Найти»</div>';
+    $('btnDownload').disabled = true;
+    $('btnPrint').disabled = true;
+    $('status').style.display = 'none';
+  });
+
+  // ============================================================
+  //            МОДУЛЬ 2: ЗАМЕЩЕНИЕ В ОТПУСКЕ
+  // ============================================================
+  (function fillMonths() {
+    const sel = $('vacPayMonth');
+    MONTHS_NOM.forEach((name, i) => {
+      const opt = document.createElement('option');
+      opt.value = i + 1;
+      opt.textContent = name.charAt(0).toUpperCase() + name.slice(1);
+      sel.appendChild(opt);
+    });
+  })();
+
+  (function setDefaults() {
+    const now = new Date();
+    $('vacPayMonth').value = now.getMonth() + 1;
+    $('vacPayYear').value = now.getFullYear();
+  })();
+
+  function collectVacData() {
+    return {
+      fio        : $('vacFio').value,
+      post       : $('vacPost').value,
+      fromISO    : $('vacFrom').value,
+      toISO      : $('vacTo').value,
+      replaceFio : $('vacReplace').value,
+      payMonth   : parseInt($('vacPayMonth').value, 10),
+      payYear    : $('vacPayYear').value.trim()
+    };
+  }
+
+  const VAC_FALLBACK = {
+    fio        : '__________________________',
+    post       : '__________________________',
+    replaceFio : '__________________________',
+    dateFrom   : '«___» ____________ 20___ г.',
+    dateTo     : '«___» ____________ 20___ г.',
+    payMonth   : '____________',
+    payYear    : '20___'
+  };
+
+  const VAC_TOP_GAP = '<br><br><br>';
+  const VAC_GAP6    = '<br><br><br><br><br><br>';
+
+  function buildVacLetter(d) {
+    // Дата внизу = 1-е число месяца начала замещения (по полю «Замещал с»).
+    // Если дата «с» не указана — используем сегодняшнюю.
+    const baseISO     = d.fromISO || new Date().toISOString().slice(0, 10);
+    const firstDayISO = firstOfMonthISO(baseISO) || baseISO;
+    const dateLineRu  = formatDateRu(firstDayISO);
+
+    const fio        = d.fio        ? esc(d.fio)        : VAC_FALLBACK.fio;
+    const post       = d.post       ? esc(d.post)       : VAC_FALLBACK.post;
+    const replaceFio = d.replaceFio ? esc(d.replaceFio) : VAC_FALLBACK.replaceFio;
+    const dateFrom   = d.fromISO    ? formatDateRu(d.fromISO) : VAC_FALLBACK.dateFrom;
+    const dateTo     = d.toISO      ? formatDateRu(d.toISO)   : VAC_FALLBACK.dateTo;
+    const payMonth   = (d.payMonth && MONTHS_NOM[d.payMonth - 1]) || VAC_FALLBACK.payMonth;
+    const payYear    = d.payYear ? esc(d.payYear) : VAC_FALLBACK.payYear;
+
+    return `
+      ${VAC_TOP_GAP}
+
+      <p class="addressee">
+        Генеральному директору<br>
+        ООО «ПРОЕКТ 111»<br>
+        Цибину Николаю Анатольевичу
+      </p>
+
+      ${VAC_GAP6}
+
+      <p class="title">СЛУЖЕБНАЯ ЗАПИСКА</p>
+
+      <p class="body">
+        В связи с нахождением в ежегодном отпуске ${replaceFio}, ${post},
+        отдела новые рынки с ${dateFrom} по ${dateTo}, прошу возложить
+        обязанности в данный период на ${fio}, ${post}, отдела новые рынки
+        с оплатой в размере 30% от оклада. Выплату произвести вместе
+        с заработной платой за ${payMonth} ${payYear} г.
+      </p>
+
+      ${VAC_GAP6}
+
+      <p class="date-line">${dateLineRu}</p>
+
+      <p class="sign-role">Руководитель</p>
+      <p class="sign-line">________________________/Головко Н.Б./</p>
+    `;
+  }
+
+  let currentVacHTML = '';
+
+  function renderVac() {
+    const d = collectVacData();
+    currentVacHTML = buildVacLetter(d);
+    $('vacPaper').innerHTML = currentVacHTML;
+    $('btnVacDownload').disabled = false;
+    $('btnVacPrint').disabled = false;
+
+    const missing = [];
+    if (!d.fio)        missing.push('Кто заменял');
+    if (!d.post)       missing.push('Должность');
+    if (!d.fromISO)    missing.push('дата «с»');
+    if (!d.toISO)      missing.push('дата «по»');
+    if (!d.replaceFio) missing.push('Кого заменял');
+    if (!d.payYear)    missing.push('год выплаты');
+
+    const s = $('vacStatus');
+    s.style.display = 'block';
+    if (!missing.length) {
+      s.className = 'status ok';
+      s.innerHTML = '✓ Записка готова. Можно скачать или распечатать.';
+    } else {
+      s.className = 'status warn';
+      s.innerHTML = 'Не заполнено: <span class="miss">' + missing.join(', ') + '</span>.';
+    }
+  }
+
+  function downloadVac() {
+    const d = collectVacData();
+    const safeName = (d.replaceFio || d.fio || 'Служебная записка')
+      .replace(/[\\/:*?<>|]/g, '').trim().slice(0, 40) || 'Служебная записка';
+    downloadDoc(buildVacLetter(d), 'Служебная записка — ' + safeName + '.doc');
+  }
+
+  function printVac() {
+    renderVac();
+    const w = window.open('', '_blank');
+    w.document.write(`<html><head><meta charset="utf-8"><title>Служебная записка</title>
+      <style>
+        @page { size: A4; margin: 2cm 2cm 2cm 2.5cm; }
+        body { font-family: "Times New Roman", serif; font-size: 12pt; line-height: 1.5; }
+        p { margin: 0; }
+        .addressee { text-align: right; margin-bottom: 40px; line-height: 1.35; }
+        .title { text-align: center; font-weight: bold; font-size: 13pt; margin: 30px 0 40px; letter-spacing: .06em; }
+        .body { text-align: justify; text-indent: 1.25cm; margin-bottom: 10px; }
+        .date-line { margin-bottom: 22px; }
+        .sign-role { margin-bottom: 8px; }
+      </style></head><body>${currentVacHTML}</body></html>`);
+    w.document.close();
+    w.focus();
+    setTimeout(() => w.print(), 300);
+  }
+
+  $('btnVacCreate').addEventListener('click', renderVac);
+  $('btnVacDownload').addEventListener('click', downloadVac);
+  $('btnVacPrint').addEventListener('click', printVac);
+
+  ['vacFio','vacPost','vacFrom','vacTo','vacReplace','vacPayMonth','vacPayYear'].forEach(id => {
+    const el = $(id);
+    el.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); renderVac(); }
+    });
+    el.addEventListener('change', () => { if (currentVacHTML) renderVac(); });
+  });
+
+  $('btnVacClear').addEventListener('click', () => {
+    $('vacFio').value = '';
+    $('vacPost').value = '';
+    $('vacFrom').value = '';
+    $('vacTo').value = '';
+    $('vacReplace').value = '';
+    const now = new Date();
+    $('vacPayMonth').value = now.getMonth() + 1;
+    $('vacPayYear').value = now.getFullYear();
+    currentVacHTML = '';
+    $('vacPaper').innerHTML = '<div class="empty-hint">Выберите сотрудников и нажмите «Создать записку»</div>';
+    $('btnVacDownload').disabled = true;
+    $('btnVacPrint').disabled = true;
+    $('vacStatus').style.display = 'none';
+  });
+
+  // ============================================================
+  //                 МОДУЛЬ 3: ОТГУЛ
+  // ============================================================
+  function collectOtgData() {
+    const fioSel  = $('otgFio');
+    const postSel = $('otgPost');
+    const fioOpt  = fioSel.selectedOptions[0];
+    const postOpt = postSel.selectedOptions[0];
+    return {
+      fioNom   : fioSel.value,
+      fioGen   : (fioOpt  && fioOpt.dataset.gen)   || '',
+      fioShort : (fioOpt  && fioOpt.dataset.short) || '',
+      postNom  : postSel.value,
+      postGen  : (postOpt && postOpt.dataset.gen)  || '',
+      restISO  : $('otgRest').value,
+      overISO  : $('otgOver').value
+    };
+  }
+
+  const OTG_FALLBACK = {
+    fioGen  : '__________________________',
+    fioShort: '__________________________',
+    postGen : '__________________________',
+    dateRest: '«___» ____________ 20___ года',
+    dateOver: '«___» ____________ 20___ года'
+  };
+
+  const OTG_TOP_GAP   = '<br><br><br><br><br><br>';
+  const OTG_SIGN_GAP  = '<br><br><br><br>';
+  const OTG_CHIEF_GAP = '<br><br><br><br>';
+
+  function buildOtgLetter(d) {
+    const todayRu = formatDateRu(new Date().toISOString().slice(0, 10));
+
+    const fioGen   = d.fioGen   ? esc(d.fioGen)   : OTG_FALLBACK.fioGen;
+    const fioShort = d.fioShort ? esc(d.fioShort) : OTG_FALLBACK.fioShort;
+    const postGen  = d.postGen  ? esc(d.postGen)  : OTG_FALLBACK.postGen;
+
+    const dateRest = d.restISO ? formatDateRuLong(d.restISO) : OTG_FALLBACK.dateRest;
+    const dateOver = d.overISO ? formatDateRuLong(d.overISO) : OTG_FALLBACK.dateOver;
+
+    return `
+      <p class="addressee">
+        Генеральному директору ООО «ПРОЕКТ 111»<br>
+        Цибину Николаю Анатольевичу<br>
+        от ${fioGen}<br>
+        ${postGen} отдела Новые рынки
+      </p>
+
+      ${OTG_TOP_GAP}
+
+      <p class="title">ЗАЯВЛЕНИЕ</p>
+
+      <p class="body">Прошу предоставить день отдыха ${dateRest} за отработанное
+        время в количестве ___ часов в выходной день/сверхурочно ${dateOver}</p>
+
+      ${OTG_SIGN_GAP}
+
+      <p class="sign-row">${todayRu} __________ ${fioShort}</p>
+
+      ${OTG_CHIEF_GAP}
+
+      <p class="chief-title">Непосредственный руководитель:</p>
+      <p class="chief-line">Руководитель&nbsp;&nbsp;&nbsp;&nbsp;_______________&nbsp;&nbsp;&nbsp;&nbsp;Головко Н.Б.</p>
+    `;
+  }
+
+  let currentOtgHTML = '';
+
+  function renderOtg() {
+    const d = collectOtgData();
+    currentOtgHTML = buildOtgLetter(d);
+    $('otgPaper').innerHTML = currentOtgHTML;
+    $('btnOtgDownload').disabled = false;
+    $('btnOtgPrint').disabled = false;
+
+    const missing = [];
+    if (!d.fioNom)  missing.push('ФИО');
+    if (!d.postNom) missing.push('Должность');
+    if (!d.restISO) missing.push('дата отдыха');
+    if (!d.overISO) missing.push('дата переработки');
+
+    const s = $('otgStatus');
+    s.style.display = 'block';
+    if (!missing.length) {
+      s.className = 'status ok';
+      s.innerHTML = '✓ Заявление готово. Можно скачать или распечатать.';
+    } else {
+      s.className = 'status warn';
+      s.innerHTML = 'Не заполнено: <span class="miss">' + missing.join(', ') + '</span>.';
+    }
+  }
+
+  function downloadOtg() {
+    const d = collectOtgData();
+    const safeName = (d.fioNom || 'Заявление').replace(/[\\/:*?<>|]/g, '').trim().slice(0, 40) || 'Заявление';
+    downloadDoc(buildOtgLetter(d), 'Заявление на отгул — ' + safeName + '.doc');
+  }
+
+  function printOtg() {
+    renderOtg();
+    const w = window.open('', '_blank');
+    w.document.write(`<html><head><meta charset="utf-8"><title>Заявление на отгул</title>
+      <style>
+        @page { size: A4; margin: 2cm 2cm 2cm 2.5cm; }
+        body { font-family: "Times New Roman", serif; font-size: 12pt; line-height: 1.5; }
+        p { margin: 0; }
+        .addressee { text-align: right; line-height: 1.35; }
+        .title { text-align: center; font-weight: bold; font-size: 13pt; letter-spacing: .06em; margin: 0; }
+        .body { text-align: justify; text-indent: 1.25cm; margin: 0; }
+        .sign-row { text-align: left; margin: 0; }
+        .chief-title { margin: 0; }
+        .chief-line { margin: 0; }
+      </style></head><body>${currentOtgHTML}</body></html>`);
+    w.document.close();
+    w.focus();
+    setTimeout(() => w.print(), 300);
+  }
+
+  $('btnOtgCreate').addEventListener('click', renderOtg);
+  $('btnOtgDownload').addEventListener('click', downloadOtg);
+  $('btnOtgPrint').addEventListener('click', printOtg);
+
+  ['otgFio','otgPost','otgRest','otgOver'].forEach(id => {
+    const el = $(id);
+    el.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); renderOtg(); }
+    });
+    el.addEventListener('change', () => { if (currentOtgHTML) renderOtg(); });
+  });
+
+  $('btnOtgClear').addEventListener('click', () => {
+    $('otgFio').value = '';
+    $('otgPost').value = '';
+    $('otgRest').value = '';
+    $('otgOver').value = '';
+    currentOtgHTML = '';
+    $('otgPaper').innerHTML = '<div class="empty-hint">Заполните поля слева и нажмите «Создать заявление»</div>';
+    $('btnOtgDownload').disabled = true;
+    $('btnOtgPrint').disabled = true;
+    $('otgStatus').style.display = 'none';
+  });
+
+  // ============================================================
+  //                       СТАРТ
+  // ============================================================
+  const today = new Date();
+  $('dateInput').value = today.toISOString().slice(0, 10);
+
+})();
+</script>
+</body>
+</html>
