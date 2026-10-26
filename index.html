@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Рабочие документы</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Crect%20width='64'%20height='64'%20rx='14'%20fill='%232563eb'/%3E%3Ctext%20x='32'%20y='45'%20font-family='Arial,Helvetica,sans-serif'%20font-size='34'%20font-weight='700'%20fill='%23ffffff'%20text-anchor='middle'%3E%D0%94%D0%9A%3C/text%3E%3C/svg%3E">
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <style>
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; }
@@ -99,6 +100,7 @@
     box-shadow: 0 0 0 3px rgba(59,130,246,.15);
   }
   .field input::placeholder { color: #94a3b8; }
+  .field input[type=file] { padding: 9px; }
 
   .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
@@ -131,6 +133,7 @@
   }
   .status.ok   { background: #f0fdf4; border-color: #bbf7d0; color: #166534; }
   .status.warn { background: #fffbeb; border-color: #fde68a; color: #92400e; }
+  .status.err  { background: #fef2f2; border-color: #fecaca; color: #b91c1c; }
   .status .miss { color: #b91c1c; font-weight: 600; }
 
   .buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
@@ -168,6 +171,50 @@
     border: 1px solid #e2e8f0; border-radius: 6px;
     padding: 7% 7% 7% 8%;
   }
+
+  /* ---- Превью таблицы для модуля «Обработка прайса» ---- */
+  .price-table-wrap {
+    width: 100%;
+    max-height: 72vh;
+    overflow: auto;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    position: relative;
+  }
+  .price-table {
+    border-collapse: collapse;
+    font-size: 12px;
+    white-space: nowrap;
+    min-width: 100%;
+  }
+  .price-table th, .price-table td {
+    padding: 7px 10px;
+    border-bottom: 1px solid #eef1f6;
+    border-right: 1px solid #f1f5f9;
+    text-align: left;
+    vertical-align: top;
+    max-width: 260px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .price-table th {
+    background: #f1f5f9;
+    color: #334155;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+  .price-table tr:hover td { background: #f8fafc; }
+  .price-table .row-num {
+    color: #94a3b8;
+    background: #f8fafc;
+    position: sticky;
+    left: 0;
+    z-index: 1;
+  }
+  .price-table th.row-num { z-index: 2; }
 
   .paper {
     font-family: "Times New Roman", Times, serif;
@@ -246,6 +293,7 @@
       <button class="nav-btn active" data-view="codes">Вывод кодов ЧЗ</button>
       <button class="nav-btn" data-view="vacation">Замещение в отпуске</button>
       <button class="nav-btn" data-view="otgul">Отгул</button>
+      <button class="nav-btn" data-view="price">Обработка прайса</button>
     </nav>
   </aside>
 
@@ -458,6 +506,48 @@
       </div>
     </section>
 
+    <!-- ============ ВИД 4: ОБРАБОТКА ПРАЙСА ============ -->
+    <section class="view" id="view-price">
+      <div class="page-head">
+        <h1>Обработка прайса для Урсуса</h1>
+        <div class="sub">Загрузите CSV или Excel, укажите наценку на залежалый товар — получите готовый XLSX со стилями.</div>
+      </div>
+
+      <div class="layout">
+        <div class="card">
+          <h2>Данные прайса <span class="badge">XLSX</span></h2>
+
+          <div class="field">
+            <label for="priceFile">Файл (.csv, .xlsx, .xls)</label>
+            <input type="file" id="priceFile" accept=".csv,.xlsx,.xls">
+          </div>
+
+          <div class="field">
+            <label for="priceMargin">Процент наценки на залежалый товар</label>
+            <input type="number" id="priceMargin" value="30" step="0.1">
+          </div>
+
+          <button class="btn-find" id="btnPriceProcess" type="button" disabled>Обработать</button>
+
+          <div class="status" id="priceStatus"></div>
+
+          <div class="buttons">
+            <button class="btn-sec" id="btnPriceDownload" disabled>Скачать XLSX</button>
+            <button class="btn-sec" id="btnPriceClear">Очистить</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="preview-shell">
+            <div class="preview-label">Предпросмотр результата (первые 20 строк)</div>
+            <div class="price-table-wrap" id="pricePreviewWrap">
+              <div class="empty-hint">Загрузите файл и нажмите «Обработать»</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
   </main>
 </div>
 
@@ -498,7 +588,6 @@
     if (!m) return iso;
     return m[3] + '.' + m[2] + '.' + m[1];
   }
-  // Первое число того же месяца, что и iso (YYYY-MM-01)
   function firstOfMonthISO(iso) {
     if (!iso) return '';
     const m = String(iso).match(/^(\d{4})-(\d{2})/);
@@ -948,8 +1037,6 @@
   const VAC_GAP6    = '<br><br><br><br><br><br>';
 
   function buildVacLetter(d) {
-    // Дата внизу = 1-е число месяца начала замещения (по полю «Замещал с»).
-    // Если дата «с» не указана — используем сегодняшнюю.
     const baseISO     = d.fromISO || new Date().toISOString().slice(0, 10);
     const firstDayISO = firstOfMonthISO(baseISO) || baseISO;
     const dateLineRu  = formatDateRu(firstDayISO);
@@ -1216,6 +1303,382 @@
     $('btnOtgPrint').disabled = true;
     $('otgStatus').style.display = 'none';
   });
+
+  // ============================================================
+  //              МОДУЛЬ 4: ОБРАБОТКА ПРАЙСА
+  // ============================================================
+
+  // --- нормализация заголовков / значений ---
+  function priceNormHeader(s) {
+    return String(s == null ? '' : s)
+      .replace(/\u00A0/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toLowerCase();
+  }
+  function priceNormSimple(s) {
+    return String(s == null ? '' : s).trim().toLowerCase();
+  }
+  function priceFindHeader(row, name) {
+    if (!row) return -1;
+    const target = priceNormHeader(name);
+    for (let i = 0; i < row.length; i++) {
+      if (priceNormHeader(row[i]) === target) return i;
+    }
+    return -1;
+  }
+
+  function priceToNumber(v) {
+    if (v === null || v === undefined || v === '') return null;
+    if (typeof v === 'number') return isFinite(v) ? v : null;
+
+    let s = String(v).trim();
+    if (s === '') return null;
+    s = s.replace(/[\s\u00A0]/g, '');
+
+    const hasComma = s.indexOf(',') !== -1;
+    const hasDot   = s.indexOf('.') !== -1;
+
+    if (hasComma && hasDot) {
+      if (s.lastIndexOf(',') > s.lastIndexOf('.')) {
+        s = s.replace(/\./g, '').replace(',', '.');
+      } else {
+        s = s.replace(/,/g, '');
+      }
+    } else if (hasComma) {
+      const n = (s.match(/,/g) || []).length;
+      s = n > 1 ? s.replace(/,/g, '') : s.replace(',', '.');
+    }
+
+    const x = parseFloat(s);
+    return isNaN(x) ? null : x;
+  }
+
+  // --- чтение файла (CSV / XLSX / XLS) ---
+  function priceLooksLikeZip(bytes) {
+    return bytes.length > 2 && bytes[0] === 0x50 && bytes[1] === 0x4B;
+  }
+
+  function priceDecodeCsvBuffer(arrayBuffer) {
+    const bytes = new Uint8Array(arrayBuffer);
+    if (bytes[0] === 0xEF && bytes[1] === 0xBB && bytes[2] === 0xBF) {
+      return new TextDecoder('utf-8').decode(bytes.subarray(3));
+    }
+    if (bytes[0] === 0xFF && bytes[1] === 0xFE) {
+      return new TextDecoder('utf-16le').decode(bytes.subarray(2));
+    }
+    if (bytes[0] === 0xFE && bytes[1] === 0xFF) {
+      return new TextDecoder('utf-16be').decode(bytes.subarray(2));
+    }
+    try {
+      return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+    } catch (e) {
+      return new TextDecoder('windows-1251').decode(bytes);
+    }
+  }
+
+  function priceReadWorkbook(arrayBuffer) {
+    const bytes = new Uint8Array(arrayBuffer);
+    if (priceLooksLikeZip(bytes)) {
+      return XLSX.read(arrayBuffer, { type: 'array' });
+    }
+    const text = priceDecodeCsvBuffer(arrayBuffer);
+    try {
+      return XLSX.read(text, { type: 'string', raw: true });
+    } catch (e) {
+      return XLSX.read(text, { type: 'string' });
+    }
+  }
+
+  // --- основная обработка прайса ---
+  // Возвращает { data, newWs, sheetName, processedCount, deletedCount }
+  function priceProcess(arrayBuffer, marginPercent) {
+    const workbook = priceReadWorkbook(arrayBuffer);
+    const sheetName = workbook.SheetNames[0];
+    if (!sheetName) throw new Error('В файле нет ни одного листа.');
+
+    const ws = workbook.Sheets[sheetName];
+    const data = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: '' });
+    if (!data.length) throw new Error('Лист пустой.');
+
+    const staleCol = priceFindHeader(data[0], 'Залежалость');
+    const costCol  = priceFindHeader(data[0], 'СС из прайса');
+    const priceCol = priceFindHeader(data[0], 'Цена милл.');
+
+    if (staleCol < 0) throw new Error('Не найден столбец «Залежалость».');
+    if (costCol  < 0) throw new Error('Не найден столбец «СС из прайса».');
+    if (priceCol < 0) throw new Error('Не найден столбец «Цена милл.».');
+
+    // 1. Наценка на залежалый товар
+    let processedCount = 0;
+    for (let r = 1; r < data.length; r++) {
+      const row = data[r];
+      if (!row) continue;
+
+      const staleVal = priceNormSimple(row[staleCol]);
+      if (staleVal !== 'залежалый' && staleVal !== 'очень залежалый') continue;
+
+      const cost = priceToNumber(row[costCol]);
+      if (cost === null) continue;
+
+      const calcPrice = cost * (1 + marginPercent / 100);
+      if (calcPrice === 0) continue;
+
+      const currentPrice = priceToNumber(row[priceCol]);
+      if (currentPrice === null || currentPrice === 0) {
+        row[priceCol] = calcPrice;
+      } else {
+        row[priceCol] = Math.min(calcPrice, currentPrice);
+      }
+      processedCount++;
+    }
+
+    // 2. Удаление столбцов
+    const toDelete = [
+      'Опубликовано на сайте',
+      'Цена 18%',
+      'Цена 20%',
+      'Цена специалиста',
+      'Цена магистра',
+      'Цена доцента',
+      'Цена проф.',
+      'Цена гранд-проф.',
+      'Цена акад',
+      'СС из прайса',
+      'Залежалость',
+      'Режим закупки',
+      'ID артикула'
+    ];
+
+    const delIdxs = [];
+    for (const name of toDelete) {
+      const idx = priceFindHeader(data[0], name);
+      if (idx >= 0) delIdxs.push(idx);
+    }
+    delIdxs.sort((a, b) => b - a);
+
+    for (const idx of delIdxs) {
+      for (let r = 0; r < data.length; r++) {
+        const row = data[r];
+        if (Array.isArray(row) && row.length > idx) row.splice(idx, 1);
+      }
+    }
+
+    // 3. Переименование заголовков
+    const rename = (oldName, newName) => {
+      const idx = priceFindHeader(data[0], oldName);
+      if (idx >= 0) data[0][idx] = newName;
+    };
+    rename('Цена EU', 'Цена РРЦ');
+    rename('Цена милл.', 'Цена со скидкой');
+
+    // 4. «Код артикула» — всегда текст
+    const articleCol = priceFindHeader(data[0], 'Код артикула');
+    if (articleCol >= 0) {
+      for (let r = 1; r < data.length; r++) {
+        const row = data[r];
+        if (!row || row[articleCol] == null) continue;
+        if (typeof row[articleCol] !== 'string') {
+          row[articleCol] = String(row[articleCol]);
+        }
+      }
+    }
+
+    // 5. Цены — приводим к числам
+    ['Цена РРЦ', 'Цена со скидкой'].forEach(name => {
+      const col = priceFindHeader(data[0], name);
+      if (col < 0) return;
+      for (let r = 1; r < data.length; r++) {
+        const row = data[r];
+        if (!row) continue;
+        const v = row[col];
+        if (v === null || v === undefined || v === '') continue;
+        const n = priceToNumber(v);
+        if (n !== null) row[col] = n;
+      }
+    });
+
+    // 6. Новый лист
+    const newWs = XLSX.utils.aoa_to_sheet(data);
+
+    // 7. Автоподбор ширины
+    const autofitNames = [
+      'Код артикула',
+      'Цена РРЦ',
+      'Цена со скидкой',
+      'Категория',
+      'Подкатегория',
+      'Ссылка на товар',
+      'Кол-во на складе'
+    ];
+    newWs['!cols'] = data[0].map(() => ({ wch: 12 }));
+    for (const name of autofitNames) {
+      const c = priceFindHeader(data[0], name);
+      if (c < 0) continue;
+      let maxLen = String(data[0][c] || '').length;
+      for (let r = 0; r < data.length; r++) {
+        const row = data[r];
+        if (!row || row[c] == null) continue;
+        const len = String(row[c]).length;
+        if (len > maxLen) maxLen = len;
+      }
+      newWs['!cols'][c] = { wch: Math.min(maxLen + 2, 60) };
+    }
+
+    // 8. Выравнивание по левому краю
+    if (newWs['!ref']) {
+      const range = XLSX.utils.decode_range(newWs['!ref']);
+      const styleLeft = { alignment: { horizontal: 'left', vertical: 'center' } };
+      for (let R = range.s.r; R <= range.e.r; R++) {
+        for (let C = range.s.c; C <= range.e.c; C++) {
+          const addr = XLSX.utils.encode_cell({ r: R, c: C });
+          if (newWs[addr]) newWs[addr].s = styleLeft;
+        }
+      }
+    }
+
+    return { data, newWs, sheetName, processedCount, deletedCount: delIdxs.length };
+  }
+
+  // --- превью таблицы ---
+  function renderPricePreview(result) {
+    const wrap = $('pricePreviewWrap');
+    const rows = result.data;
+    if (!rows || !rows.length) {
+      wrap.innerHTML = '<div class="empty-hint" style="padding:60px 10px;margin-top:0;">Нет данных</div>';
+      return;
+    }
+    const PREVIEW = 20;
+    const totalRows = rows.length;
+    const showRows = rows.slice(0, Math.min(PREVIEW + 1, totalRows));
+
+    const th = '<th class="row-num">#</th>' +
+      showRows[0].map(h => '<th>' + esc(h == null ? '' : h) + '</th>').join('');
+    const tbody = showRows.slice(1).map((row, i) => {
+      const tds = row.map(v => {
+        let txt = v == null ? '' : String(v);
+        if (typeof v === 'number') txt = String(v).replace('.', ',');
+        return '<td title="' + esc(txt) + '">' + esc(txt) + '</td>';
+      }).join('');
+      return '<tr><td class="row-num">' + (i + 1) + '</td>' + tds + '</tr>';
+    }).join('');
+
+    const more = totalRows > PREVIEW + 1
+      ? '<div style="padding:10px 14px;color:#94a3b8;font-size:12px;">… ещё ' +
+        (totalRows - PREVIEW - 1) + ' строк в полном файле</div>'
+      : '';
+
+    wrap.innerHTML =
+      '<table class="price-table"><thead><tr>' + th + '</tr></thead>' +
+      '<tbody>' + tbody + '</tbody></table>' + more;
+  }
+
+  // --- состояние ---
+  let priceCurrentFile = null;
+  let priceLastResult  = null;
+
+  // --- статус ---
+  function setPriceStatus(html, kind) {
+    const s = $('priceStatus');
+    if (!html) { s.style.display = 'none'; s.innerHTML = ''; return; }
+    s.style.display = 'block';
+    s.className = 'status ' + (kind || '');
+    s.innerHTML = html;
+  }
+
+  // --- обработка по нажатию ---
+  function handlePriceProcess() {
+    if (!priceCurrentFile) return;
+
+    const margin = parseFloat($('priceMargin').value);
+    if (isNaN(margin)) {
+      setPriceStatus('Введите корректный процент наценки.', 'err');
+      return;
+    }
+
+    $('btnPriceProcess').disabled = true;
+    $('btnPriceProcess').textContent = 'Обработка…';
+    setPriceStatus('Читаем и обрабатываем файл…', '');
+
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      try {
+        const result = priceProcess(e.target.result, margin);
+        priceLastResult = result;
+
+        renderPricePreview(result);
+
+        setPriceStatus(
+          '✓ Готово. Обработано залежалых строк: <b>' + result.processedCount +
+          '</b>. Удалено столбцов: <b>' + result.deletedCount + '</b>.',
+          'ok'
+        );
+
+        $('btnPriceDownload').disabled = false;
+      } catch (err) {
+        console.error(err);
+        setPriceStatus('✗ ' + (err.message || 'Не удалось обработать файл.'), 'err');
+        $('pricePreviewWrap').innerHTML =
+          '<div class="empty-hint" style="padding:60px 10px;margin-top:0;">Ошибка обработки</div>';
+        $('btnPriceDownload').disabled = true;
+      } finally {
+        $('btnPriceProcess').disabled = false;
+        $('btnPriceProcess').textContent = 'Обработать';
+      }
+    };
+
+    reader.onerror = () => {
+      setPriceStatus('Не удалось прочитать файл.', 'err');
+      $('btnPriceProcess').disabled = false;
+      $('btnPriceProcess').textContent = 'Обработать';
+    };
+
+    reader.readAsArrayBuffer(priceCurrentFile);
+  }
+
+  // --- скачивание XLSX ---
+  function handlePriceDownload() {
+    if (!priceLastResult) return;
+
+    const newWb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(newWb, priceLastResult.newWs, priceLastResult.sheetName);
+    XLSX.writeFile(newWb, 'Прайс для Урсуса.xlsx', { cellStyles: true });
+  }
+
+  // --- очистка ---
+  function handlePriceClear() {
+    priceCurrentFile = null;
+    priceLastResult  = null;
+    $('priceFile').value = '';
+    $('priceMargin').value = 30;
+    $('btnPriceProcess').disabled = true;
+    $('btnPriceDownload').disabled = true;
+    $('pricePreviewWrap').innerHTML =
+      '<div class="empty-hint">Загрузите файл и нажмите «Обработать»</div>';
+    setPriceStatus('');
+  }
+
+  // --- события ---
+  $('priceFile').addEventListener('change', () => {
+    priceCurrentFile = $('priceFile').files[0] || null;
+    $('btnPriceProcess').disabled = !priceCurrentFile;
+    $('btnPriceDownload').disabled = true;
+    priceLastResult = null;
+    setPriceStatus('');
+    if (!priceCurrentFile) {
+      $('pricePreviewWrap').innerHTML =
+        '<div class="empty-hint">Загрузите файл и нажмите «Обработать»</div>';
+    }
+  });
+
+  $('priceMargin').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); handlePriceProcess(); }
+  });
+
+  $('btnPriceProcess').addEventListener('click', handlePriceProcess);
+  $('btnPriceDownload').addEventListener('click', handlePriceDownload);
+  $('btnPriceClear').addEventListener('click', handlePriceClear);
 
   // ============================================================
   //                       СТАРТ
