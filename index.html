@@ -25,17 +25,16 @@
     display: flex; flex-direction: column; gap: 22px;
   }
   .sidebar-brand {
-    display: flex; align-items: center; gap: 10px;
+    display: flex; align-items: center; gap: 12px;
     padding: 0 8px;
   }
   .sidebar-brand .mark {
-    width: 36px; height: 36px; flex-shrink: 0;
-    background: #2563eb; border-radius: 9px;
+    width: 40px; height: 40px; flex-shrink: 0;
+    background: #2563eb; border-radius: 10px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 22px; /* Увеличенный размер для эмодзи */
+    font-size: 24px; /* Увеличенный размер для эмодзи */
   }
-  .sidebar-brand .title { color: #fff; font-size: 14px; font-weight: 600; line-height: 1.2; }
-  .sidebar-brand .subtitle { color: #94a3b8; font-size: 11px; margin-top: 2px; }
+  .sidebar-brand .title { color: #fff; font-size: 15px; font-weight: 600; line-height: 1.2; }
 
   .nav { display: flex; flex-direction: column; gap: 4px; }
   .nav-label {
@@ -89,7 +88,7 @@
     color: #334155; margin-bottom: 6px;
   }
   .field input, .field select {
-    width: 100%; padding: 11px 13px;
+    width: 100%; padding: 12px 14px;
     font-size: 14px; font-family: inherit;
     border: 1px solid #cbd5e1; border-radius: 9px;
     outline: none; transition: .15s;
@@ -276,7 +275,7 @@
     font-size: 14px; text-align: center; margin-top: 90px;
   }
 
-  /* ------- Экран входа ------- */
+  /* ------- Экран входа (Минимализм) ------- */
   .login-screen {
     position: fixed; inset: 0; z-index: 1000;
     background: linear-gradient(160deg, #1e293b 0%, #0f172a 100%);
@@ -288,20 +287,8 @@
   .login-card {
     width: 100%; max-width: 340px;
     background: #fff; border-radius: 16px;
-    padding: 32px 26px 26px;
+    padding: 32px 26px;
     box-shadow: 0 24px 60px rgba(0,0,0,.45);
-  }
-  .login-hero { text-align: center; margin-bottom: 24px; }
-  .login-avatar {
-    font-size: 72px;
-    line-height: 1;
-    display: block;
-    animation: avatarPop .55s cubic-bezier(.34,1.56,.64,1);
-  }
-  @keyframes avatarPop {
-    0%   { transform: scale(.4) rotate(-20deg); opacity: 0; }
-    60%  { transform: scale(1.15) rotate(8deg); }
-    100% { transform: scale(1) rotate(0); opacity: 1; }
   }
 
   .login-error {
@@ -334,15 +321,13 @@
 
 <div class="login-screen" id="loginScreen">
   <form class="login-card" id="loginForm" autocomplete="on">
-    <div class="login-hero">
-      <span class="login-avatar" id="loginAvatar">🦊</span>
-    </div>
-
     <div class="field">
+      <label for="loginUser">Логин</label>
       <input id="loginUser" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="введите логин">
     </div>
 
     <div class="field" id="loginPassField">
+      <label for="loginPass">Пароль</label>
       <input id="loginPass" type="password" autocomplete="current-password" placeholder="введите пароль">
     </div>
 
@@ -357,8 +342,8 @@
     <div class="sidebar-brand">
       <div class="mark" id="sidebarAvatar">🦊</div>
       <div>
-        <div class="title">Рабочие документы</div>
-        <div class="subtitle">ООО «Проект 111»</div>
+        <!-- Сюда JS будет вставлять Имя и Фамилию -->
+        <div class="title" id="sidebarUserName">Пользователь</div>
       </div>
     </div>
 
@@ -712,7 +697,7 @@
 
   const SESSION_KEY = 'dk_session_login';
 
-  // Милые эмодзи-аватары
+  // Милые эмодзи для сайдбара
   const CUTE_EMOJIS = [
     '🦊','🐱','🐶','🐼','🐨','🦁','🐯','🐸','🐧','🦄',
     '🐹','🐰','🐻','🐷','🐮','🦝','🦦','🦥','🐢','🐙',
@@ -720,24 +705,9 @@
   ];
 
   function pickRandomAvatar() {
-    const loginEl = document.getElementById('loginAvatar');
     const sideEl = document.getElementById('sidebarAvatar');
-    if (!loginEl && !sideEl) return;
-    
-    let emoji;
-    do {
-      emoji = CUTE_EMOJIS[Math.floor(Math.random() * CUTE_EMOJIS.length)];
-    } while (emoji === (loginEl ? loginEl.textContent : '') && CUTE_EMOJIS.length > 1);
-
-    if (loginEl) {
-      loginEl.textContent = emoji;
-      loginEl.style.animation = 'none';
-      void loginEl.offsetWidth;
-      loginEl.style.animation = '';
-    }
-    if (sideEl) {
-      sideEl.textContent = emoji;
-    }
+    if (!sideEl) return;
+    sideEl.textContent = CUTE_EMOJIS[Math.floor(Math.random() * CUTE_EMOJIS.length)];
   }
 
   const loginScreen = document.getElementById('loginScreen');
@@ -756,11 +726,16 @@
     loginScreen.classList.add('hidden');
     showLoginError('');
 
+    // Скрываем запрещенные разделы
     navButtons.forEach(btn => {
       const allowed = user.views.indexOf(btn.dataset.view) !== -1;
       btn.style.display = allowed ? '' : 'none';
     });
 
+    // Устанавливаем Имя и Фамилию в верхний левый угол
+    document.getElementById('sidebarUserName').textContent = user.name;
+    
+    // Данные в самом низу сайдбара
     document.getElementById('suName').textContent = user.name;
     document.getElementById('suRole').textContent = user.roleLabel + ' · ' + currentUser;
 
@@ -771,7 +746,10 @@
   function logout() {
     sessionStorage.removeItem(SESSION_KEY);
     currentUser = null;
-    pickRandomAvatar();
+    
+    // Сбрасываем имя в сайдбаре на дефолтное
+    document.getElementById('sidebarUserName').textContent = 'Пользователь';
+    
     loginScreen.classList.remove('hidden');
     document.getElementById('loginUser').value = '';
     document.getElementById('loginPass').value = '';
