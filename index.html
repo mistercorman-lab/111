@@ -275,9 +275,86 @@
     color: #94a3b8; font-family: sans-serif;
     font-size: 14px; text-align: center; margin-top: 90px;
   }
+
+  /* ------- Экран входа ------- */
+  .login-screen {
+    position: fixed; inset: 0; z-index: 1000;
+    background: linear-gradient(160deg, #1e293b 0%, #0f172a 100%);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .login-screen.hidden { display: none; }
+
+  .login-card {
+    width: 100%; max-width: 380px;
+    background: #fff; border-radius: 16px;
+    padding: 28px 26px 26px;
+    box-shadow: 0 24px 60px rgba(0,0,0,.45);
+  }
+  .login-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+  .login-brand .mark {
+    width: 44px; height: 44px; flex-shrink: 0;
+    background: #2563eb; border-radius: 11px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 17px;
+  }
+  .login-title { font-size: 16px; font-weight: 700; color: #1c2430; }
+  .login-sub { font-size: 12px; color: #64748b; margin-top: 2px; }
+
+  .login-error {
+    display: none; margin-bottom: 12px;
+    padding: 9px 11px; border-radius: 8px;
+    background: #fef2f2; color: #b91c1c;
+    font-size: 12.5px; line-height: 1.5;
+  }
+  .login-error.show { display: block; }
+
+  /* ------- Блок пользователя в сайдбаре ------- */
+  .sidebar-user {
+    margin-top: auto;
+    padding: 14px 8px 0;
+    border-top: 1px solid #334155;
+  }
+  .su-name { color: #fff; font-size: 13px; font-weight: 600; }
+  .su-role { color: #94a3b8; font-size: 11px; margin: 2px 0 10px; }
+  .su-logout {
+    width: 100%; padding: 8px 10px;
+    background: #334155; color: #e2e8f0;
+    border: none; border-radius: 7px;
+    font-family: inherit; font-size: 12.5px; font-weight: 500;
+    cursor: pointer; transition: .15s;
+  }
+  .su-logout:hover { background: #475569; }
 </style>
 </head>
 <body>
+
+<div class="login-screen" id="loginScreen">
+  <form class="login-card" id="loginForm" autocomplete="on">
+    <div class="login-brand">
+      <div class="mark">ДК</div>
+      <div>
+        <div class="login-title">Рабочие документы</div>
+        <div class="login-sub">ООО «Проект 111»</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="loginUser">Логин</label>
+      <input id="loginUser" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="dkarmanov">
+    </div>
+
+    <div class="field">
+      <label for="loginPass">Пароль</label>
+      <input id="loginPass" type="password" autocomplete="current-password" placeholder="••••••••">
+    </div>
+
+    <div class="login-error" id="loginError"></div>
+
+    <button class="btn-find" type="submit">Войти</button>
+  </form>
+</div>
+
 <div class="app">
   <aside class="sidebar">
     <div class="sidebar-brand">
@@ -295,6 +372,12 @@
       <button class="nav-btn" data-view="otgul">Отгул</button>
       <button class="nav-btn" data-view="price">Обработка прайса</button>
     </nav>
+
+    <div class="sidebar-user">
+      <div class="su-name" id="suName">—</div>
+      <div class="su-role" id="suRole">—</div>
+      <button class="su-logout" id="btnLogout" type="button">Выйти</button>
+    </div>
   </aside>
 
   <main class="main">
@@ -559,6 +642,8 @@
       .replace(/&/g,'&amp;').replace(/</g,'&lt;')
       .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
+  let currentUser = null;
+
   const MONTHS_GEN = [
     'января','февраля','марта','апреля','мая','июня',
     'июля','августа','сентября','октября','ноября','декабря'
@@ -599,12 +684,106 @@
   const navButtons = document.querySelectorAll('.nav-btn');
   const views = document.querySelectorAll('.view');
   function switchView(name) {
+    if (currentUser) {
+      const u = USERS[currentUser];
+      if (!u || u.views.indexOf(name) === -1) return;
+    }
     navButtons.forEach(b => b.classList.toggle('active', b.dataset.view === name));
     views.forEach(v => v.classList.toggle('active', v.id === 'view-' + name));
   }
   navButtons.forEach(btn => {
     btn.addEventListener('click', () => switchView(btn.dataset.view));
   });
+
+  // ============================================================
+  //                    АВТОРИЗАЦИЯ
+  // ============================================================
+  // Логины и пароли. Чтобы сменить пароль — отредактируйте значение password.
+  const USERS = {
+    dkarmanov: {
+      password : 'admin111',
+      name     : 'Карманов Д. С.',
+      roleLabel: 'Администратор',
+      views    : ['codes', 'vacation', 'otgul', 'price']
+    },
+    ngolovko: {
+      password : 'price111',
+      name     : 'Головко Н. Б.',
+      roleLabel: 'Доступ: прайс',
+      views    : ['price']
+    }
+  };
+
+  const SESSION_KEY = 'dk_session_login';
+
+  const loginScreen = document.getElementById('loginScreen');
+  const loginForm   = document.getElementById('loginForm');
+  const loginError  = document.getElementById('loginError');
+
+  function showLoginError(msg) {
+    loginError.textContent = msg || '';
+    loginError.classList.toggle('show', !!msg);
+  }
+
+  function applySession() {
+    const user = USERS[currentUser];
+    if (!user) return;
+
+    loginScreen.classList.add('hidden');
+    showLoginError('');
+
+    navButtons.forEach(btn => {
+      const allowed = user.views.indexOf(btn.dataset.view) !== -1;
+      btn.style.display = allowed ? '' : 'none';
+    });
+
+    document.getElementById('suName').textContent = user.name;
+    document.getElementById('suRole').textContent = user.roleLabel + ' · ' + currentUser;
+
+    const first = Array.prototype.find.call(navButtons, b => b.style.display !== 'none');
+    if (first) switchView(first.dataset.view);
+  }
+
+  function logout() {
+    sessionStorage.removeItem(SESSION_KEY);
+    currentUser = null;
+    loginScreen.classList.remove('hidden');
+    document.getElementById('loginUser').value = '';
+    document.getElementById('loginPass').value = '';
+    showLoginError('');
+    document.getElementById('loginUser').focus();
+  }
+
+  loginForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const login = document.getElementById('loginUser').value.trim().toLowerCase();
+    const pass  = document.getElementById('loginPass').value;
+    const user  = USERS[login];
+
+    if (!user || user.password !== pass) {
+      showLoginError('Неверный логин или пароль.');
+      document.getElementById('loginPass').value = '';
+      document.getElementById('loginPass').focus();
+      return;
+    }
+
+    currentUser = login;
+    sessionStorage.setItem(SESSION_KEY, login);
+    document.getElementById('loginPass').value = '';
+    applySession();
+  });
+
+  document.getElementById('btnLogout').addEventListener('click', logout);
+
+  (function restoreSession() {
+    const saved = sessionStorage.getItem(SESSION_KEY);
+    if (saved && USERS[saved]) {
+      currentUser = saved;
+      applySession();
+    } else {
+      document.getElementById('loginUser').focus();
+    }
+  })();
 
   // ============================================================
   //              МОДУЛЬ 1: ВЫВОД КОДОВ ЧЗ
@@ -1308,7 +1487,6 @@
   //              МОДУЛЬ 4: ОБРАБОТКА ПРАЙСА
   // ============================================================
 
-  // --- нормализация заголовков / значений ---
   function priceNormHeader(s) {
     return String(s == null ? '' : s)
       .replace(/\u00A0/g, ' ')
@@ -1354,7 +1532,6 @@
     return isNaN(x) ? null : x;
   }
 
-  // --- чтение файла (CSV / XLSX / XLS) ---
   function priceLooksLikeZip(bytes) {
     return bytes.length > 2 && bytes[0] === 0x50 && bytes[1] === 0x4B;
   }
@@ -1390,8 +1567,6 @@
     }
   }
 
-  // --- основная обработка прайса ---
-  // Возвращает { data, newWs, sheetName, processedCount, deletedCount }
   function priceProcess(arrayBuffer, marginPercent) {
     const workbook = priceReadWorkbook(arrayBuffer);
     const sheetName = workbook.SheetNames[0];
@@ -1409,7 +1584,6 @@
     if (costCol  < 0) throw new Error('Не найден столбец «СС из прайса».');
     if (priceCol < 0) throw new Error('Не найден столбец «Цена милл.».');
 
-    // 1. Наценка на залежалый товар
     let processedCount = 0;
     for (let r = 1; r < data.length; r++) {
       const row = data[r];
@@ -1433,7 +1607,6 @@
       processedCount++;
     }
 
-    // 2. Удаление столбцов
     const toDelete = [
       'Опубликовано на сайте',
       'Цена 18%',
@@ -1464,7 +1637,6 @@
       }
     }
 
-    // 3. Переименование заголовков
     const rename = (oldName, newName) => {
       const idx = priceFindHeader(data[0], oldName);
       if (idx >= 0) data[0][idx] = newName;
@@ -1472,7 +1644,6 @@
     rename('Цена EU', 'Цена РРЦ');
     rename('Цена милл.', 'Цена со скидкой');
 
-    // 4. «Код артикула» — всегда текст
     const articleCol = priceFindHeader(data[0], 'Код артикула');
     if (articleCol >= 0) {
       for (let r = 1; r < data.length; r++) {
@@ -1484,7 +1655,6 @@
       }
     }
 
-    // 5. Цены — приводим к числам
     ['Цена РРЦ', 'Цена со скидкой'].forEach(name => {
       const col = priceFindHeader(data[0], name);
       if (col < 0) return;
@@ -1498,10 +1668,8 @@
       }
     });
 
-    // 6. Новый лист
     const newWs = XLSX.utils.aoa_to_sheet(data);
 
-    // 7. Автоподбор ширины
     const autofitNames = [
       'Код артикула',
       'Цена РРЦ',
@@ -1525,7 +1693,6 @@
       newWs['!cols'][c] = { wch: Math.min(maxLen + 2, 60) };
     }
 
-    // 8. Выравнивание по левому краю
     if (newWs['!ref']) {
       const range = XLSX.utils.decode_range(newWs['!ref']);
       const styleLeft = { alignment: { horizontal: 'left', vertical: 'center' } };
@@ -1540,7 +1707,6 @@
     return { data, newWs, sheetName, processedCount, deletedCount: delIdxs.length };
   }
 
-  // --- превью таблицы ---
   function renderPricePreview(result) {
     const wrap = $('pricePreviewWrap');
     const rows = result.data;
@@ -1573,11 +1739,9 @@
       '<tbody>' + tbody + '</tbody></table>' + more;
   }
 
-  // --- состояние ---
   let priceCurrentFile = null;
   let priceLastResult  = null;
 
-  // --- статус ---
   function setPriceStatus(html, kind) {
     const s = $('priceStatus');
     if (!html) { s.style.display = 'none'; s.innerHTML = ''; return; }
@@ -1586,7 +1750,6 @@
     s.innerHTML = html;
   }
 
-  // --- обработка по нажатию ---
   function handlePriceProcess() {
     if (!priceCurrentFile) return;
 
@@ -1637,7 +1800,6 @@
     reader.readAsArrayBuffer(priceCurrentFile);
   }
 
-  // --- скачивание XLSX ---
   function handlePriceDownload() {
     if (!priceLastResult) return;
 
@@ -1646,7 +1808,6 @@
     XLSX.writeFile(newWb, 'Прайс для Урсуса.xlsx', { cellStyles: true });
   }
 
-  // --- очистка ---
   function handlePriceClear() {
     priceCurrentFile = null;
     priceLastResult  = null;
@@ -1659,7 +1820,6 @@
     setPriceStatus('');
   }
 
-  // --- события ---
   $('priceFile').addEventListener('change', () => {
     priceCurrentFile = $('priceFile').files[0] || null;
     $('btnPriceProcess').disabled = !priceCurrentFile;
