@@ -664,7 +664,7 @@
   const views = document.querySelectorAll('.view');
   function switchView(name) {
     if (currentUser) {
-      const u = APP_USERS[currentUser];
+      const u = USERS[currentUser];
       if (!u || u.views.indexOf(name) === -1) return;
     }
     navButtons.forEach(b => b.classList.toggle('active', b.dataset.view === name));
@@ -677,6 +677,9 @@
   // ============================================================
   //                    АВТОРИЗАЦИЯ (из файла users.js)
   // ============================================================
+  if (!window.APP_USERS) {
+      console.error("ОШИБКА: Файл users.js не найден или содержит синтаксическую ошибку! Проверьте, что он лежит в той же папке и называется с маленькой буквы.");
+  }
   const USERS = window.APP_USERS || {};
 
   const SESSION_KEY = 'dk_session_login';
