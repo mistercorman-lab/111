@@ -291,15 +291,21 @@
     padding: 28px 26px 26px;
     box-shadow: 0 24px 60px rgba(0,0,0,.45);
   }
-  .login-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
-  .login-brand .mark {
-    width: 44px; height: 44px; flex-shrink: 0;
-    background: #2563eb; border-radius: 11px;
-    display: flex; align-items: center; justify-content: center;
-    color: #fff; font-weight: 700; font-size: 17px;
+  .login-hero { text-align: center; margin-bottom: 22px; }
+  .login-avatar {
+    font-size: 64px;
+    line-height: 1;
+    display: block;
+    margin-bottom: 10px;
+    animation: avatarPop .55s cubic-bezier(.34,1.56,.64,1);
   }
-  .login-title { font-size: 16px; font-weight: 700; color: #1c2430; }
-  .login-sub { font-size: 12px; color: #64748b; margin-top: 2px; }
+  @keyframes avatarPop {
+    0%   { transform: scale(.4) rotate(-20deg); opacity: 0; }
+    60%  { transform: scale(1.15) rotate(8deg); }
+    100% { transform: scale(1) rotate(0); opacity: 1; }
+  }
+  .login-title { font-size: 17px; font-weight: 700; color: #1c2430; }
+  .login-sub { font-size: 12px; color: #64748b; margin-top: 3px; }
 
   .login-error {
     display: none; margin-bottom: 12px;
@@ -331,12 +337,10 @@
 
 <div class="login-screen" id="loginScreen">
   <form class="login-card" id="loginForm" autocomplete="on">
-    <div class="login-brand">
-      <div class="mark">ДК</div>
-      <div>
-        <div class="login-title">Рабочие документы</div>
-        <div class="login-sub">ООО «Проект 111»</div>
-      </div>
+    <div class="login-hero">
+      <span class="login-avatar" id="loginAvatar">🦊</span>
+      <div class="login-title">Рабочие документы</div>
+      <div class="login-sub">ООО «Проект 111»</div>
     </div>
 
     <div class="field">
@@ -344,9 +348,9 @@
       <input id="loginUser" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="dkarmanov">
     </div>
 
-    <div class="field">
+    <div class="field" id="loginPassField">
       <label for="loginPass">Пароль</label>
-      <input id="loginPass" type="password" autocomplete="current-password" placeholder="••••••••">
+      <input id="loginPass" type="password" autocomplete="current-password" placeholder="нужен только для dkarmanov">
     </div>
 
     <div class="login-error" id="loginError"></div>
@@ -698,23 +702,43 @@
   // ============================================================
   //                    АВТОРИЗАЦИЯ
   // ============================================================
-  // Логины и пароли. Чтобы сменить пароль — отредактируйте значение password.
+  // Пароль требуется только если задан (не null).
   const USERS = {
     dkarmanov: {
-      password : 'admin111',
-      name     : 'Карманов Д. С.',
+      password : 'dimon4kj',
+      name     : 'Дмитрий Карманов',
       roleLabel: 'Администратор',
       views    : ['codes', 'vacation', 'otgul', 'price']
     },
     ngolovko: {
-      password : 'price111',
-      name     : 'Головко Н. Б.',
+      password : null,
+      name     : 'Наталья Головко',
       roleLabel: 'Доступ: прайс',
       views    : ['price']
     }
   };
 
   const SESSION_KEY = 'dk_session_login';
+
+  // Милые эмодзи-аватары: каждый раз при показе экрана входа — новый
+  const CUTE_EMOJIS = [
+    '🦊','🐱','🐶','🐼','🐨','🦁','🐯','🐸','🐧','🦄',
+    '🐹','🐰','🐻','🐷','🐮','🦝','🦦','🦥','🐢','🐙',
+    '🦉','🦋','🐳','🦔','🐿️'
+  ];
+
+  function pickRandomAvatar() {
+    const el = document.getElementById('loginAvatar');
+    if (!el) return;
+    let emoji;
+    do {
+      emoji = CUTE_EMOJIS[Math.floor(Math.random() * CUTE_EMOJIS.length)];
+    } while (emoji === el.textContent && CUTE_EMOJIS.length > 1);
+    el.textContent = emoji;
+    el.style.animation = 'none';
+    void el.offsetWidth;
+    el.style.animation = '';
+  }
 
   const loginScreen = document.getElementById('loginScreen');
   const loginForm   = document.getElementById('loginForm');
@@ -747,6 +771,7 @@
   function logout() {
     sessionStorage.removeItem(SESSION_KEY);
     currentUser = null;
+    pickRandomAvatar();
     loginScreen.classList.remove('hidden');
     document.getElementById('loginUser').value = '';
     document.getElementById('loginPass').value = '';
@@ -760,8 +785,19 @@
     const pass  = document.getElementById('loginPass').value;
     const user  = USERS[login];
 
-    if (!user || user.password !== pass) {
-      showLoginError('Неверный логин или пароль.');
+    if (!login) {
+      showLoginError('Введите логин.');
+      document.getElementById('loginUser').focus();
+      return;
+    }
+    if (!user) {
+      showLoginError('Пользователь не найден.');
+      document.getElementById('loginPass').value = '';
+      return;
+    }
+    // Пароль требуется только если он задан у пользователя
+    if (user.password && user.password !== pass) {
+      showLoginError('Неверный пароль.');
       document.getElementById('loginPass').value = '';
       document.getElementById('loginPass').focus();
       return;
@@ -776,6 +812,7 @@
   document.getElementById('btnLogout').addEventListener('click', logout);
 
   (function restoreSession() {
+    pickRandomAvatar();
     const saved = sessionStorage.getItem(SESSION_KEY);
     if (saved && USERS[saved]) {
       currentUser = saved;
