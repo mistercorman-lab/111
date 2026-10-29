@@ -32,7 +32,7 @@
     width: 36px; height: 36px; flex-shrink: 0;
     background: #2563eb; border-radius: 9px;
     display: flex; align-items: center; justify-content: center;
-    color: #fff; font-weight: 700; font-size: 15px;
+    font-size: 22px; /* Увеличенный размер для эмодзи */
   }
   .sidebar-brand .title { color: #fff; font-size: 14px; font-weight: 600; line-height: 1.2; }
   .sidebar-brand .subtitle { color: #94a3b8; font-size: 11px; margin-top: 2px; }
@@ -286,17 +286,16 @@
   .login-screen.hidden { display: none; }
 
   .login-card {
-    width: 100%; max-width: 380px;
+    width: 100%; max-width: 340px;
     background: #fff; border-radius: 16px;
-    padding: 28px 26px 26px;
+    padding: 32px 26px 26px;
     box-shadow: 0 24px 60px rgba(0,0,0,.45);
   }
-  .login-hero { text-align: center; margin-bottom: 22px; }
+  .login-hero { text-align: center; margin-bottom: 24px; }
   .login-avatar {
-    font-size: 64px;
+    font-size: 72px;
     line-height: 1;
     display: block;
-    margin-bottom: 10px;
     animation: avatarPop .55s cubic-bezier(.34,1.56,.64,1);
   }
   @keyframes avatarPop {
@@ -304,8 +303,6 @@
     60%  { transform: scale(1.15) rotate(8deg); }
     100% { transform: scale(1) rotate(0); opacity: 1; }
   }
-  .login-title { font-size: 17px; font-weight: 700; color: #1c2430; }
-  .login-sub { font-size: 12px; color: #64748b; margin-top: 3px; }
 
   .login-error {
     display: none; margin-bottom: 12px;
@@ -339,18 +336,14 @@
   <form class="login-card" id="loginForm" autocomplete="on">
     <div class="login-hero">
       <span class="login-avatar" id="loginAvatar">🦊</span>
-      <div class="login-title">Рабочие документы</div>
-      <div class="login-sub">ООО «Проект 111»</div>
     </div>
 
     <div class="field">
-      <label for="loginUser">Логин</label>
-      <input id="loginUser" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="dkarmanov">
+      <input id="loginUser" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="введите логин">
     </div>
 
     <div class="field" id="loginPassField">
-      <label for="loginPass">Пароль</label>
-      <input id="loginPass" type="password" autocomplete="current-password" placeholder="нужен только для dkarmanov">
+      <input id="loginPass" type="password" autocomplete="current-password" placeholder="введите пароль">
     </div>
 
     <div class="login-error" id="loginError"></div>
@@ -362,7 +355,7 @@
 <div class="app">
   <aside class="sidebar">
     <div class="sidebar-brand">
-      <div class="mark">ДК</div>
+      <div class="mark" id="sidebarAvatar">🦊</div>
       <div>
         <div class="title">Рабочие документы</div>
         <div class="subtitle">ООО «Проект 111»</div>
@@ -702,7 +695,6 @@
   // ============================================================
   //                    АВТОРИЗАЦИЯ
   // ============================================================
-  // Пароль требуется только если задан (не null).
   const USERS = {
     dkarmanov: {
       password : 'dimon4kj',
@@ -711,7 +703,7 @@
       views    : ['codes', 'vacation', 'otgul', 'price']
     },
     ngolovko: {
-      password : null,
+      password : null, // Пароль не требуется
       name     : 'Наталья Головко',
       roleLabel: 'Доступ: прайс',
       views    : ['price']
@@ -720,7 +712,7 @@
 
   const SESSION_KEY = 'dk_session_login';
 
-  // Милые эмодзи-аватары: каждый раз при показе экрана входа — новый
+  // Милые эмодзи-аватары
   const CUTE_EMOJIS = [
     '🦊','🐱','🐶','🐼','🐨','🦁','🐯','🐸','🐧','🦄',
     '🐹','🐰','🐻','🐷','🐮','🦝','🦦','🦥','🐢','🐙',
@@ -728,16 +720,24 @@
   ];
 
   function pickRandomAvatar() {
-    const el = document.getElementById('loginAvatar');
-    if (!el) return;
+    const loginEl = document.getElementById('loginAvatar');
+    const sideEl = document.getElementById('sidebarAvatar');
+    if (!loginEl && !sideEl) return;
+    
     let emoji;
     do {
       emoji = CUTE_EMOJIS[Math.floor(Math.random() * CUTE_EMOJIS.length)];
-    } while (emoji === el.textContent && CUTE_EMOJIS.length > 1);
-    el.textContent = emoji;
-    el.style.animation = 'none';
-    void el.offsetWidth;
-    el.style.animation = '';
+    } while (emoji === (loginEl ? loginEl.textContent : '') && CUTE_EMOJIS.length > 1);
+
+    if (loginEl) {
+      loginEl.textContent = emoji;
+      loginEl.style.animation = 'none';
+      void loginEl.offsetWidth;
+      loginEl.style.animation = '';
+    }
+    if (sideEl) {
+      sideEl.textContent = emoji;
+    }
   }
 
   const loginScreen = document.getElementById('loginScreen');
@@ -795,7 +795,6 @@
       document.getElementById('loginPass').value = '';
       return;
     }
-    // Пароль требуется только если он задан у пользователя
     if (user.password && user.password !== pass) {
       showLoginError('Неверный пароль.');
       document.getElementById('loginPass').value = '';
