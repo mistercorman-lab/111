@@ -6,6 +6,9 @@
 <title>Документы</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Crect%20width='64'%20height='64'%20rx='14'%20fill='%232563eb'/%3E%3Ctext%20x='32'%20y='45'%20font-family='Arial,Helvetica,sans-serif'%20font-size='34'%20font-weight='700'%20fill='%23ffffff'%20text-anchor='middle'%3E%D0%94%D0%9A%3C/text%3E%3C/svg%3E">
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+<!-- ПОДКЛЮЧАЕМ ФАЙЛ С ПОЛЬЗОВАТЕЛЯМИ -->
+<script src="users.js"></script>
+
 <style>
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; }
@@ -661,7 +664,7 @@
   const views = document.querySelectorAll('.view');
   function switchView(name) {
     if (currentUser) {
-      const u = USERS[currentUser];
+      const u = APP_USERS[currentUser];
       if (!u || u.views.indexOf(name) === -1) return;
     }
     navButtons.forEach(b => b.classList.toggle('active', b.dataset.view === name));
@@ -672,22 +675,12 @@
   });
 
   // ============================================================
-  //                    АВТОРИЗАЦИЯ
+  //                    АВТОРИЗАЦИЯ (из файла users.js)
   // ============================================================
-  const USERS = {
-    dkarmanov: {
-      password : 'dimon4kj',
-      name     : 'Дмитрий Карманов',
-      views    : ['codes', 'vacation', 'otgul', 'price']
-    },
-    ngolovko: {
-      password : null, // Пароль не требуется
-      name     : 'Наталья Головко',
-      views    : ['price']
-    }
-  };
+  const USERS = window.APP_USERS || {};
 
   const SESSION_KEY = 'dk_session_login';
+  const FORM_STORAGE_KEY = 'dk_form_data';
 
   // 30 максимально совместимых эмодзи (только базовые животные)
   const CUTE_EMOJIS = [
@@ -701,6 +694,42 @@
     if (!sideEl) return;
     sideEl.textContent = CUTE_EMOJIS[Math.floor(Math.random() * CUTE_EMOJIS.length)];
   }
+
+  // --- СОХРАНЕНИЕ И ВОССТАНОВЛЕНИЕ ДАННЫХ ФОРМЫ ---
+  function saveFormData() {
+    const data = {};
+    document.querySelectorAll('.view input, .view select').forEach(el => {
+      if (el.type === 'file') return; // файлы сохранять нельзя
+      if (el.id) data[el.id] = el.value;
+    });
+    localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(data));
+  }
+
+  function loadFormData() {
+    const raw = localStorage.getItem(FORM_STORAGE_KEY);
+    if (!raw) return;
+    try {
+      const data = JSON.parse(raw);
+      for (const id in data) {
+        const el = document.getElementById(id);
+        if (el && el.type !== 'file') {
+          el.value = data[id];
+        }
+      }
+    } catch (e) {
+      console.error('Ошибка при восстановлении данных формы', e);
+    }
+  }
+
+  // Вешаем слушатели на все поля ввода
+  document.addEventListener('input', e => {
+    if (e.target.closest('.view')) saveFormData();
+  });
+  document.addEventListener('change', e => {
+    if (e.target.closest('.view')) saveFormData();
+  });
+
+  // -------------------------------------------------
 
   const loginScreen = document.getElementById('loginScreen');
   const loginForm   = document.getElementById('loginForm');
@@ -732,7 +761,7 @@
   }
 
   function logout() {
-    sessionStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem(SESSION_KEY);
     currentUser = null;
     
     // Сбрасываем имя в сайдбаре на дефолтное
@@ -769,7 +798,7 @@
     }
 
     currentUser = login;
-    sessionStorage.setItem(SESSION_KEY, login);
+    localStorage.setItem(SESSION_KEY, login);
     document.getElementById('loginPass').value = '';
     applySession();
   });
@@ -778,7 +807,9 @@
 
   (function restoreSession() {
     pickRandomAvatar();
-    const saved = sessionStorage.getItem(SESSION_KEY);
+    loadFormData();
+    
+    const saved = localStorage.getItem(SESSION_KEY);
     if (saved && USERS[saved]) {
       currentUser = saved;
       applySession();
@@ -1171,6 +1202,7 @@
     $('btnDownload').disabled = true;
     $('btnPrint').disabled = true;
     $('status').style.display = 'none';
+    saveFormData(); // Сохраняем очищенное состояние
   });
 
   // ============================================================
@@ -1340,6 +1372,7 @@
     $('btnVacDownload').disabled = true;
     $('btnVacPrint').disabled = true;
     $('vacStatus').style.display = 'none';
+    saveFormData(); // Сохраняем очищенное состояние
   });
 
   // ============================================================
@@ -1483,6 +1516,7 @@
     $('btnOtgDownload').disabled = true;
     $('btnOtgPrint').disabled = true;
     $('otgStatus').style.display = 'none';
+    saveFormData(); // Сохраняем очищенное состояние
   });
 
   // ============================================================
@@ -1820,6 +1854,7 @@
     $('pricePreviewWrap').innerHTML =
       '<div class="empty-hint">Загрузите файл и нажмите «Обработать»</div>';
     setPriceStatus('');
+    saveFormData(); // Сохраняем очищенное состояние
   }
 
   $('priceFile').addEventListener('change', () => {
@@ -1846,7 +1881,10 @@
   //                       СТАРТ
   // ============================================================
   const today = new Date();
-  $('dateInput').value = today.toISOString().slice(0, 10);
+  // Устанавливаем дату по умолчанию только если поле пустое (чтобы не перезаписать сохраненную)
+  if (!$('dateInput').value) {
+    $('dateInput').value = today.toISOString().slice(0, 10);
+  }
 
 })();
 </script>
