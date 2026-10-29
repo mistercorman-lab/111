@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Рабочие документы</title>
+<title>Документы</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Crect%20width='64'%20height='64'%20rx='14'%20fill='%232563eb'/%3E%3Ctext%20x='32'%20y='45'%20font-family='Arial,Helvetica,sans-serif'%20font-size='34'%20font-weight='700'%20fill='%23ffffff'%20text-anchor='middle'%3E%D0%94%D0%9A%3C/text%3E%3C/svg%3E">
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <style>
@@ -275,7 +275,7 @@
     font-size: 14px; text-align: center; margin-top: 90px;
   }
 
-  /* ------- Экран входа (Минимализм) ------- */
+  /* ------- Экран входа ------- */
   .login-screen {
     position: fixed; inset: 0; z-index: 1000;
     background: linear-gradient(160deg, #1e293b 0%, #0f172a 100%);
@@ -305,8 +305,6 @@
     padding: 14px 8px 0;
     border-top: 1px solid #334155;
   }
-  .su-name { color: #fff; font-size: 13px; font-weight: 600; }
-  .su-role { color: #94a3b8; font-size: 11px; margin: 2px 0 10px; }
   .su-logout {
     width: 100%; padding: 8px 10px;
     background: #334155; color: #e2e8f0;
@@ -341,10 +339,8 @@
   <aside class="sidebar">
     <div class="sidebar-brand">
       <div class="mark" id="sidebarAvatar">🦊</div>
-      <div>
-        <!-- Сюда JS будет вставлять Имя и Фамилию -->
-        <div class="title" id="sidebarUserName">Пользователь</div>
-      </div>
+      <!-- Сюда JS будет вставлять Имя и Фамилию -->
+      <div class="title" id="sidebarUserName">Пользователь</div>
     </div>
 
     <nav class="nav">
@@ -356,8 +352,6 @@
     </nav>
 
     <div class="sidebar-user">
-      <div class="su-name" id="suName">—</div>
-      <div class="su-role" id="suRole">—</div>
       <button class="su-logout" id="btnLogout" type="button">Выйти</button>
     </div>
   </aside>
@@ -684,13 +678,11 @@
     dkarmanov: {
       password : 'dimon4kj',
       name     : 'Дмитрий Карманов',
-      roleLabel: 'Администратор',
       views    : ['codes', 'vacation', 'otgul', 'price']
     },
     ngolovko: {
       password : null, // Пароль не требуется
       name     : 'Наталья Головко',
-      roleLabel: 'Доступ: прайс',
       views    : ['price']
     }
   };
@@ -734,10 +726,6 @@
 
     // Устанавливаем Имя и Фамилию в верхний левый угол
     document.getElementById('sidebarUserName').textContent = user.name;
-    
-    // Данные в самом низу сайдбара
-    document.getElementById('suName').textContent = user.name;
-    document.getElementById('suRole').textContent = user.roleLabel + ' · ' + currentUser;
 
     const first = Array.prototype.find.call(navButtons, b => b.style.display !== 'none');
     if (first) switchView(first.dataset.view);
