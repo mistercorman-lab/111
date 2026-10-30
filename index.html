@@ -4,237 +4,273 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Документы</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Crect%20width='64'%20height='64'%20rx='14'%20fill='%232563eb'/%3E%3Ctext%20x='32'%20y='45'%20font-family='Arial,Helvetica,sans-serif'%20font-size='34'%20font-weight='700'%20fill='%23ffffff'%20text-anchor='middle'%3E%D0%94%D0%9A%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Crect%20width='64'%20height='64'%20rx='16'%20fill='%237c5cfc'/%3E%3Ctext%20x='32'%20y='45'%20font-family='Arial,Helvetica,sans-serif'%20font-size='30'%20font-weight='700'%20fill='%23ffffff'%20text-anchor='middle'%3E%D0%94%3C/text%3E%3C/svg%3E">
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
-<!-- ПОДКЛЮЧАЕМ ФАЙЛ С ПОЛЬЗОВАТЕЛЯМИ -->
 <script src="users.js"></script>
 
 <style>
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; }
   body {
-    font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-    background: #eef1f6;
-    color: #1c2430;
+    font-family: -apple-system, "Segoe UI", Inter, Roboto, Arial, sans-serif;
+    background: #f6f7fb;
+    color: #1b1d28;
+    -webkit-font-smoothing: antialiased;
   }
 
   .app { display: flex; min-height: 100vh; }
 
+  /* ================= SIDEBAR ================= */
   .sidebar {
-    width: 250px; flex-shrink: 0;
-    background: #1e293b;
-    color: #cbd5e1;
-    padding: 22px 14px;
-    display: flex; flex-direction: column; gap: 22px;
+    width: 248px; flex-shrink: 0;
+    background: #ffffff;
+    border-right: 1px solid #eceef5;
+    padding: 20px 14px;
+    display: flex; flex-direction: column; gap: 18px;
   }
   .sidebar-brand {
-    display: flex; align-items: center; gap: 12px;
-    padding: 0 8px;
+    display: flex; align-items: center; gap: 10px;
+    padding: 0 6px 6px;
   }
   .sidebar-brand .mark {
-    width: 40px; height: 40px; flex-shrink: 0;
-    background: #2563eb; border-radius: 10px;
+    width: 36px; height: 36px; flex-shrink: 0;
+    background: linear-gradient(135deg, #8b6cf6, #6d4df2);
+    border-radius: 10px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 24px; /* Увеличенный размер для эмодзи */
+    font-size: 20px;
+    box-shadow: 0 4px 12px rgba(109,77,242,.28);
   }
-  .sidebar-brand .title { color: #fff; font-size: 15px; font-weight: 600; line-height: 1.2; }
+  .sidebar-brand .brand-text { display: flex; flex-direction: column; line-height: 1.2; }
+  .sidebar-brand .brand-name { font-size: 15px; font-weight: 700; color: #1b1d28; letter-spacing: -.01em; }
+  .sidebar-brand .title { color: #8a90a6; font-size: 11.5px; font-weight: 500; }
 
-  .nav { display: flex; flex-direction: column; gap: 4px; }
+  .nav { display: flex; flex-direction: column; gap: 3px; }
   .nav-label {
     font-size: 10.5px; text-transform: uppercase;
-    letter-spacing: .08em; color: #64748b;
-    padding: 4px 8px 6px;
+    letter-spacing: .08em; color: #a3a9bd;
+    padding: 10px 10px 6px;
   }
   .nav-btn {
-    display: block; width: 100%; text-align: left;
-    padding: 11px 12px;
-    background: transparent; color: #cbd5e1;
-    border: none; border-radius: 8px;
+    display: flex; align-items: center; gap: 10px;
+    width: 100%; text-align: left;
+    padding: 10px 12px;
+    background: transparent; color: #4d5468;
+    border: none; border-radius: 10px;
     font-family: inherit; font-size: 13.5px; font-weight: 500;
-    cursor: pointer; transition: .15s;
-    border-left: 3px solid transparent;
+    cursor: pointer; transition: .16s;
   }
-  .nav-btn:hover { background: #334155; color: #fff; }
-  .nav-btn.active { background: #334155; color: #fff; border-left-color: #3b82f6; }
+  .nav-btn .ico {
+    width: 22px; height: 22px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; border-radius: 7px;
+    background: #f3f2fb; color: #6d4df2;
+  }
+  .nav-btn:hover { background: #f7f7fb; color: #1b1d28; }
+  .nav-btn.active {
+    background: #f2efff; color: #4b2fd6; font-weight: 600;
+  }
+  .nav-btn.active .ico { background: #ffffff; box-shadow: 0 2px 6px rgba(109,77,242,.18); }
 
-  .main { flex: 1; padding: 24px; overflow: auto; }
+  /* ================= MAIN ================= */
+  .main { flex: 1; padding: 22px 26px 32px; overflow: auto; }
 
-  .view { display: none; }
-  .view.active { display: block; }
+  .topbar {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 22px;
+  }
+  .search-box {
+    flex: 1; max-width: 420px;
+    display: flex; align-items: center; gap: 9px;
+    background: #ffffff; border: 1px solid #eceef5;
+    border-radius: 11px; padding: 9px 13px;
+    color: #a3a9bd; font-size: 13px;
+    box-shadow: 0 1px 2px rgba(20,40,80,.03);
+  }
+  .search-box input {
+    flex: 1; border: none; outline: none; background: transparent;
+    font-family: inherit; font-size: 13px; color: #1b1d28;
+  }
+  .search-box input::placeholder { color: #b4b9cb; }
+  .search-box kbd {
+    font-family: inherit; font-size: 10.5px;
+    background: #f4f5fa; color: #8a90a6;
+    border: 1px solid #e8eaf3; border-radius: 5px;
+    padding: 2px 5px;
+  }
+  .topbar-right {
+    margin-left: auto; display: flex; align-items: center; gap: 10px;
+    font-size: 12.5px; color: #8a90a6;
+  }
+  .avatar-dot {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: linear-gradient(135deg, #a58bff, #7c5cfc);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px;
+    box-shadow: 0 3px 10px rgba(124,92,252,.28);
+  }
 
-  .page-head { margin-bottom: 20px; }
-  .page-head h1 { font-size: 22px; margin: 0 0 4px; }
-  .page-head .sub { color: #64748b; font-size: 14px; }
+  .page-head { margin-bottom: 18px; display: flex; align-items: flex-end; gap: 14px; flex-wrap: wrap; }
+  .page-head h1 { font-size: 24px; margin: 0; letter-spacing: -.02em; font-weight: 700; }
+  .page-head .sub { color: #8a90a6; font-size: 13px; margin: 4px 0 0; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-left: auto; }
+  .chip {
+    background: #ffffff; border: 1px solid #eceef5;
+    color: #4d5468; border-radius: 9px;
+    padding: 7px 11px; font-size: 12px; font-weight: 500;
+    display: flex; align-items: center; gap: 6px;
+    box-shadow: 0 1px 2px rgba(20,40,80,.03);
+    cursor: default;
+  }
+  .chip .dot { width: 6px; height: 6px; border-radius: 50%; background: #c7cbe0; }
 
-  .layout { display: grid; grid-template-columns: 440px 1fr; gap: 22px; align-items: start; }
+  .layout { display: grid; grid-template-columns: 430px 1fr; gap: 20px; align-items: start; }
   @media (max-width: 1100px) { .layout { grid-template-columns: 1fr; } }
 
+  /* ================= CARDS ================= */
   .card {
-    background: #fff; border-radius: 14px; padding: 22px;
-    box-shadow: 0 2px 14px rgba(20,40,80,.08);
+    background: #ffffff; border-radius: 18px; padding: 20px;
+    border: 1px solid #f0f1f7;
+    box-shadow: 0 6px 22px rgba(20,40,80,.05);
   }
   .card h2 {
-    font-size: 14px; margin: 0 0 16px;
-    text-transform: uppercase; letter-spacing: .05em; color: #475569;
-    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; margin: 0 0 15px;
+    text-transform: uppercase; letter-spacing: .07em; color: #8a90a6;
+    display: flex; align-items: center; gap: 8px; font-weight: 700;
   }
   .card h2 .badge {
-    background: #dbeafe; color: #1e40af;
-    font-size: 10px; font-weight: 700;
-    padding: 2px 6px; border-radius: 4px;
+    background: #f2efff; color: #5b3ce6;
+    font-size: 9.5px; font-weight: 700;
+    padding: 3px 7px; border-radius: 6px;
     text-transform: none; letter-spacing: 0;
   }
 
-  .field { margin-bottom: 14px; }
+  .field { margin-bottom: 13px; }
   .field label {
-    display: block; font-size: 12.5px; font-weight: 600;
-    color: #334155; margin-bottom: 6px;
+    display: block; font-size: 12px; font-weight: 600;
+    color: #4d5468; margin-bottom: 6px;
   }
   .field input, .field select {
-    width: 100%; padding: 12px 14px;
-    font-size: 14px; font-family: inherit;
-    border: 1px solid #cbd5e1; border-radius: 9px;
-    outline: none; transition: .15s;
-    background: #fbfcfe; color: #1c2430;
+    width: 100%; padding: 11px 13px;
+    font-size: 13.5px; font-family: inherit;
+    border: 1px solid #e6e8f2; border-radius: 10px;
+    outline: none; transition: .16s;
+    background: #fbfbfe; color: #1b1d28;
   }
   .field input:focus, .field select:focus {
-    border-color: #3b82f6; background: #fff;
-    box-shadow: 0 0 0 3px rgba(59,130,246,.15);
+    border-color: #a58bff; background: #fff;
+    box-shadow: 0 0 0 3px rgba(124,92,252,.12);
   }
-  .field input::placeholder { color: #94a3b8; }
-  .field input[type=file] { padding: 9px; }
+  .field input::placeholder { color: #b4b9cb; }
+  .field input[type=file] { padding: 8px; background: #fbfbfe; }
 
-  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
 
   .btn-find {
     width: 100%;
-    padding: 13px 18px; margin-top: 6px;
-    font-size: 15px; font-weight: 600; font-family: inherit;
-    background: #2563eb; color: #fff;
-    border: none; border-radius: 10px; cursor: pointer;
-    transition: .15s;
+    padding: 12px 18px; margin-top: 6px;
+    font-size: 14px; font-weight: 600; font-family: inherit;
+    background: linear-gradient(135deg, #7c5cfc, #5b3ce6);
+    color: #fff; border: none; border-radius: 11px; cursor: pointer;
+    transition: .16s;
+    box-shadow: 0 6px 16px rgba(92,60,230,.22);
   }
-  .btn-find:hover:not(:disabled) { background: #1d4ed8; }
-  .btn-find:disabled { opacity: .6; cursor: wait; }
+  .btn-find:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(92,60,230,.3); }
+  .btn-find:disabled { opacity: .55; cursor: wait; box-shadow: none; }
 
   .api-msg {
-    margin-top: 12px; font-size: 12.5px; line-height: 1.55;
-    display: none;
-    padding: 9px 11px; border-radius: 8px;
+    margin-top: 11px; font-size: 12px; line-height: 1.55;
+    display: none; padding: 9px 11px; border-radius: 9px;
   }
   .api-msg.show    { display: block; }
-  .api-msg.loading { color: #1e40af; background: #eff6ff; }
-  .api-msg.ok      { color: #166534; background: #f0fdf4; }
-  .api-msg.err     { color: #b91c1c; background: #fef2f2; }
+  .api-msg.loading { color: #4b2fd6; background: #f4f0ff; }
+  .api-msg.ok      { color: #157a4a; background: #ecfdf4; }
+  .api-msg.err     { color: #b42318; background: #fef3f2; }
 
   .status {
-    margin-top: 14px; padding: 10px 12px; border-radius: 9px;
-    font-size: 12.5px; line-height: 1.55;
-    background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;
+    margin-top: 13px; padding: 9px 11px; border-radius: 9px;
+    font-size: 12px; line-height: 1.55;
+    background: #f6f7fb; color: #4d5468; border: 1px solid #eceef5;
     display: none;
   }
-  .status.ok   { background: #f0fdf4; border-color: #bbf7d0; color: #166534; }
-  .status.warn { background: #fffbeb; border-color: #fde68a; color: #92400e; }
-  .status.err  { background: #fef2f2; border-color: #fecaca; color: #b91c1c; }
-  .status .miss { color: #b91c1c; font-weight: 600; }
+  .status.ok   { background: #ecfdf4; border-color: #c7f0d9; color: #157a4a; }
+  .status.warn { background: #fffaeb; border-color: #fde7b0; color: #8a5b00; }
+  .status.err  { background: #fef3f2; border-color: #fbd4d0; color: #b42318; }
+  .status .miss { color: #b42318; font-weight: 600; }
 
-  .buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
-  .row { display: flex; gap: 10px; }
+  .buttons { display: flex; flex-direction: column; gap: 9px; margin-top: 15px; }
+  .row { display: flex; gap: 9px; }
   .row > * { flex: 1; }
 
   .btn-sec {
-    font-family: inherit; font-size: 14px; font-weight: 600; padding: 12px 16px;
-    border-radius: 10px; cursor: pointer; transition: .15s;
-    background: #eef2f7; color: #334155; border: 1px solid #d7dee8;
+    font-family: inherit; font-size: 13px; font-weight: 600; padding: 11px 14px;
+    border-radius: 10px; cursor: pointer; transition: .16s;
+    background: #f6f7fb; color: #4d5468; border: 1px solid #eceef5;
   }
-  .btn-sec:hover:not(:disabled) { background: #e2e8f0; }
+  .btn-sec:hover:not(:disabled) { background: #eff0f7; }
   .btn-sec:disabled { opacity: .45; cursor: not-allowed; }
 
   .btn-link {
     background: none; border: none; padding: 4px 0;
-    font-size: 12px; color: #64748b;
-    text-decoration: underline; cursor: pointer;
-    font-family: inherit;
+    font-size: 11.5px; color: #a3a9bd;
+    text-decoration: none; cursor: pointer; font-family: inherit;
   }
-  .btn-link:hover { color: #1d4ed8; }
+  .btn-link:hover { color: #5b3ce6; }
 
+  /* ================= PREVIEW ================= */
   .preview-shell {
-    background: #fff; border-radius: 14px;
-    box-shadow: 0 2px 14px rgba(20,40,80,.08); padding: 14px;
+    background: #ffffff; border-radius: 18px;
+    border: 1px solid #f0f1f7;
+    box-shadow: 0 6px 22px rgba(20,40,80,.05);
+    padding: 14px;
   }
   .preview-label {
-    font-size: 12px; text-transform: uppercase;
-    letter-spacing: .05em; color: #94a3b8;
-    margin: 4px 0 12px 6px;
+    font-size: 11px; text-transform: uppercase;
+    letter-spacing: .07em; color: #a3a9bd; font-weight: 700;
+    margin: 2px 0 12px 4px;
   }
   .sheet {
     width: 100%; aspect-ratio: 210 / 297;
     overflow: auto; background: #fff;
-    border: 1px solid #e2e8f0; border-radius: 6px;
+    border: 1px solid #eceef5; border-radius: 12px;
     padding: 7% 7% 7% 8%;
+    box-shadow: inset 0 0 0 1px #f6f7fb;
   }
 
-  /* ---- Превью таблицы для модуля «Обработка прайса» ---- */
   .price-table-wrap {
-    width: 100%;
-    max-height: 72vh;
-    overflow: auto;
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    position: relative;
+    width: 100%; max-height: 72vh; overflow: auto;
+    background: #fff; border: 1px solid #eceef5;
+    border-radius: 12px; position: relative;
   }
-  .price-table {
-    border-collapse: collapse;
-    font-size: 12px;
-    white-space: nowrap;
-    min-width: 100%;
-  }
+  .price-table { border-collapse: collapse; font-size: 12px; white-space: nowrap; min-width: 100%; }
   .price-table th, .price-table td {
-    padding: 7px 10px;
-    border-bottom: 1px solid #eef1f6;
-    border-right: 1px solid #f1f5f9;
-    text-align: left;
-    vertical-align: top;
-    max-width: 260px;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    padding: 8px 11px;
+    border-bottom: 1px solid #f3f4f9;
+    border-right: 1px solid #f6f7fb;
+    text-align: left; vertical-align: top;
+    max-width: 260px; overflow: hidden; text-overflow: ellipsis;
   }
   .price-table th {
-    background: #f1f5f9;
-    color: #334155;
-    font-weight: 600;
-    position: sticky;
-    top: 0;
-    z-index: 1;
+    background: #fafafe; color: #4d5468; font-weight: 600;
+    position: sticky; top: 0; z-index: 1;
   }
-  .price-table tr:hover td { background: #f8fafc; }
+  .price-table tr:hover td { background: #fcfbff; }
   .price-table .row-num {
-    color: #94a3b8;
-    background: #f8fafc;
-    position: sticky;
-    left: 0;
-    z-index: 1;
+    color: #b4b9cb; background: #fafafe;
+    position: sticky; left: 0; z-index: 1;
   }
   .price-table th.row-num { z-index: 2; }
 
-  .paper {
-    font-family: "Times New Roman", Times, serif;
-    font-size: 12pt; line-height: 1.5; color: #000;
-  }
+  /* ================= PAPER (документы) ================= */
+  .paper { font-family: "Times New Roman", Times, serif; font-size: 12pt; line-height: 1.5; color: #000; }
   .paper p { margin: 0; }
 
-  /* ------- Письмо ЧЗ ------- */
   #paper .head { width: 100%; border-collapse: collapse; }
   #paper .head td { vertical-align: top; padding: 0; }
   #paper .head .left { width: 52%; padding-right: 14px; }
   #paper .head .right { width: 48%; padding-left: 22px; }
   #paper .head .left p { margin: 0 0 8px; text-align: left; }
   #paper .head .right p { margin: 0 0 4px; text-align: left; }
-  #paper h2 {
-    text-align: center; font-size: 12pt; font-weight: bold;
-    margin: 0 0 24px; letter-spacing: .02em;
-  }
+  #paper h2 { text-align: center; font-size: 12pt; font-weight: bold; margin: 0 0 24px; letter-spacing: .02em; }
   #paper .body { margin: 0 0 14px; text-align: justify; text-indent: 1.25cm; }
   #paper .sign { width: 100%; border-collapse: collapse; }
   #paper .sign td { vertical-align: top; padding: 0; }
@@ -245,83 +281,90 @@
   #paper .sign .who { margin-bottom: 22px; }
   #paper .sign .mp { margin-top: 22px; }
 
-  /* ------- Служебная записка ------- */
   #vacPaper { font-family: "Times New Roman", Times, serif; font-size: 12pt; line-height: 1.5; color: #000; }
   #vacPaper p { margin: 0; }
   #vacPaper .addressee { text-align: right; margin-bottom: 40px; line-height: 1.35; }
-  #vacPaper .title {
-    text-align: center; font-weight: bold;
-    font-size: 13pt; margin: 30px 0 40px;
-    letter-spacing: .06em;
-  }
+  #vacPaper .title { text-align: center; font-weight: bold; font-size: 13pt; margin: 30px 0 40px; letter-spacing: .06em; }
   #vacPaper .body { text-align: justify; text-indent: 1.25cm; margin-bottom: 10px; }
   #vacPaper .date-line { margin-bottom: 22px; text-align: left; }
   #vacPaper .sign-role { margin-bottom: 8px; }
   #vacPaper .sign-line { text-align: left; }
 
-  /* ------- Заявление на отгул ------- */
   #otgPaper { font-family: "Times New Roman", Times, serif; font-size: 12pt; line-height: 1.5; color: #000; }
   #otgPaper p { margin: 0; }
   #otgPaper .addressee { text-align: right; line-height: 1.35; }
-  #otgPaper .title {
-    text-align: center; font-weight: bold;
-    font-size: 13pt; letter-spacing: .06em;
-    margin: 0;
-  }
+  #otgPaper .title { text-align: center; font-weight: bold; font-size: 13pt; letter-spacing: .06em; margin: 0; }
   #otgPaper .body { text-align: justify; text-indent: 1.25cm; }
   #otgPaper .sign-row { text-align: left; }
   #otgPaper .chief-title { text-align: left; }
   #otgPaper .chief-line { text-align: left; }
 
   .empty-hint {
-    color: #94a3b8; font-family: sans-serif;
-    font-size: 14px; text-align: center; margin-top: 90px;
+    color: #b4b9cb; font-family: sans-serif;
+    font-size: 13.5px; text-align: center; margin-top: 90px;
   }
 
-  /* ------- Экран входа ------- */
+  /* ================= LOGIN ================= */
   .login-screen {
     position: fixed; inset: 0; z-index: 1000;
-    background: linear-gradient(160deg, #1e293b 0%, #0f172a 100%);
+    background: radial-gradient(1200px 600px at 20% 10%, #efeaff 0%, #f6f7fb 55%, #eef0f8 100%);
     display: flex; align-items: center; justify-content: center;
     padding: 20px;
   }
   .login-screen.hidden { display: none; }
 
   .login-card {
-    width: 100%; max-width: 340px;
-    background: #fff; border-radius: 16px;
-    padding: 32px 26px;
-    box-shadow: 0 24px 60px rgba(0,0,0,.45);
+    width: 100%; max-width: 360px;
+    background: #fff; border-radius: 20px;
+    padding: 34px 28px;
+    border: 1px solid #f0f1f7;
+    box-shadow: 0 24px 60px rgba(40,30,100,.14);
   }
+  .login-card .l-brand {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 22px;
+  }
+  .login-card .l-mark {
+    width: 40px; height: 40px; border-radius: 12px;
+    background: linear-gradient(135deg, #8b6cf6, #6d4df2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; box-shadow: 0 6px 16px rgba(109,77,242,.3);
+  }
+  .login-card .l-name { font-weight: 700; font-size: 15px; }
 
   .login-error {
     display: none; margin-bottom: 12px;
-    padding: 9px 11px; border-radius: 8px;
-    background: #fef2f2; color: #b91c1c;
-    font-size: 12.5px; line-height: 1.5;
+    padding: 9px 11px; border-radius: 9px;
+    background: #fef3f2; color: #b42318;
+    font-size: 12px; line-height: 1.5;
   }
   .login-error.show { display: block; }
 
-  /* ------- Блок пользователя в сайдбаре ------- */
+  /* ================= SIDEBAR USER ================= */
   .sidebar-user {
     margin-top: auto;
-    padding: 14px 8px 0;
-    border-top: 1px solid #334155;
+    padding: 14px 6px 0;
+    border-top: 1px solid #f0f1f7;
   }
   .su-logout {
-    width: 100%; padding: 8px 10px;
-    background: #334155; color: #e2e8f0;
-    border: none; border-radius: 7px;
-    font-family: inherit; font-size: 12.5px; font-weight: 500;
-    cursor: pointer; transition: .15s;
+    width: 100%; padding: 9px 10px;
+    background: #f6f7fb; color: #4d5468;
+    border: 1px solid #eceef5; border-radius: 9px;
+    font-family: inherit; font-size: 12.5px; font-weight: 600;
+    cursor: pointer; transition: .16s;
   }
-  .su-logout:hover { background: #475569; }
+  .su-logout:hover { background: #eff0f7; color: #b42318; }
 </style>
 </head>
 <body>
 
+<!-- ================= LOGIN ================= -->
 <div class="login-screen" id="loginScreen">
   <form class="login-card" id="loginForm" autocomplete="on">
+    <div class="l-brand">
+      <div class="l-mark">🐶</div>
+      <div class="l-name">Документы</div>
+    </div>
+
     <div class="field">
       <label for="loginUser">Логин</label>
       <input id="loginUser" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="введите логин">
@@ -338,20 +381,31 @@
   </form>
 </div>
 
+<!-- ================= APP ================= -->
 <div class="app">
   <aside class="sidebar">
     <div class="sidebar-brand">
       <div class="mark" id="sidebarAvatar">🐶</div>
-      <!-- Сюда JS будет вставлять Имя и Фамилию -->
-      <div class="title" id="sidebarUserName">Пользователь</div>
+      <div class="brand-text">
+        <span class="brand-name">Документы</span>
+        <span class="title" id="sidebarUserName">Пользователь</span>
+      </div>
     </div>
 
     <nav class="nav">
       <div class="nav-label">Документы</div>
-      <button class="nav-btn active" data-view="codes">Вывод кодов ЧЗ</button>
-      <button class="nav-btn" data-view="vacation">Замещение в отпуске</button>
-      <button class="nav-btn" data-view="otgul">Отгул</button>
-      <button class="nav-btn" data-view="price">Обработка прайса</button>
+      <button class="nav-btn active" data-view="codes">
+        <span class="ico">📄</span> Вывод кодов ЧЗ
+      </button>
+      <button class="nav-btn" data-view="vacation">
+        <span class="ico">🗂️</span> Замещение в отпуске
+      </button>
+      <button class="nav-btn" data-view="otgul">
+        <span class="ico">📝</span> Отгул
+      </button>
+      <button class="nav-btn" data-view="price">
+        <span class="ico">📊</span> Обработка прайса
+      </button>
     </nav>
 
     <div class="sidebar-user">
@@ -361,11 +415,29 @@
 
   <main class="main">
 
-    <!-- ============ ВИД 1: ВЫВОД КОДОВ ЧЗ ============ -->
+    <div class="topbar">
+      <div class="search-box">
+        <span>🔍</span>
+        <input type="text" placeholder="Поиск..." readonly>
+        <kbd>⌘ F</kbd>
+      </div>
+      <div class="topbar-right">
+        <span>Онлайн</span>
+        <div class="avatar-dot" id="topAvatar">🐶</div>
+      </div>
+    </div>
+
+    <!-- ============ ВИД 1 ============ -->
     <section class="view active" id="view-codes">
       <div class="page-head">
-        <h1>Письмо о выводе кодов маркировки</h1>
-        <div class="sub">Введите ИНН, № заказа и дату — приложение получит реквизиты с Checko и сформирует письмо.</div>
+        <div>
+          <h1>Вывод кодов ЧЗ</h1>
+          <div class="sub">Введите ИНН, № заказа и дату — реквизиты подтянутся с Checko, письмо сформируется автоматически.</div>
+        </div>
+        <div class="chips">
+          <div class="chip"><span class="dot" style="background:#8b6cf6"></span> Checko API</div>
+          <div class="chip"><span class="dot" style="background:#34c759"></span> Онлайн</div>
+        </div>
       </div>
 
       <div class="layout">
@@ -415,11 +487,16 @@
       </div>
     </section>
 
-    <!-- ============ ВИД 2: ЗАМЕЩЕНИЕ В ОТПУСКЕ ============ -->
+    <!-- ============ ВИД 2 ============ -->
     <section class="view" id="view-vacation">
       <div class="page-head">
-        <h1>Служебная записка о замещении в отпуске</h1>
-        <div class="sub">Выберите сотрудников из списка — записка сформируется автоматически.</div>
+        <div>
+          <h1>Замещение в отпуске</h1>
+          <div class="sub">Выберите сотрудников — служебная записка сформируется автоматически.</div>
+        </div>
+        <div class="chips">
+          <div class="chip"><span class="dot" style="background:#8b6cf6"></span> Служебная записка</div>
+        </div>
       </div>
 
       <div class="layout">
@@ -500,11 +577,16 @@
       </div>
     </section>
 
-    <!-- ============ ВИД 3: ОТГУЛ ============ -->
+    <!-- ============ ВИД 3 ============ -->
     <section class="view" id="view-otgul">
       <div class="page-head">
-        <h1>Заявление на отгул</h1>
-        <div class="sub">Заполните поля — заявление сформируется автоматически.</div>
+        <div>
+          <h1>Заявление на отгул</h1>
+          <div class="sub">Заполните поля — заявление сформируется автоматически.</div>
+        </div>
+        <div class="chips">
+          <div class="chip"><span class="dot" style="background:#8b6cf6"></span> Заявление</div>
+        </div>
       </div>
 
       <div class="layout">
@@ -551,28 +633,18 @@
               <button class="btn-sec" id="btnOtgDownload" disabled>Скачать .doc</button>
               <button class="btn-sec" id="btnOtgPrint" disabled>Печать / PDF</button>
             </div>
-            <button class="btn-sec" id="btnOtgClear">Очистить</button>
-          </div>
-        </div>
-
-        <div>
-          <div class="preview-shell">
-            <div class="preview-label">Предпросмотр</div>
-            <div class="sheet">
-              <div id="otgPaper">
-                <div class="empty-hint">Заполните поля слева и нажмите «Создать заявление»</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============ ВИД 4: ОБРАБОТКА ПРАЙСА ============ -->
+            <button class="btn-sec" id="btnOtgClear">Очистить</
+                 <!-- ============ ВИД 4 ============ -->
     <section class="view" id="view-price">
       <div class="page-head">
-        <h1>Обработка прайса для Урсуса</h1>
-        <div class="sub">Загрузите CSV или Excel, укажите категорию скидки и наценку на залежалый товар — получите готовый XLSX со стилями.</div>
+        <div>
+          <h1>Обработка прайса</h1>
+          <div class="sub">Загрузите CSV или Excel, укажите категорию скидки и наценку на залежалый товар — получите готовый XLSX со стилями.</div>
+        </div>
+        <div class="chips">
+          <div class="chip"><span class="dot" style="background:#8b6cf6"></span> XLSX</div>
+          <div class="chip"><span class="dot" style="background:#34c759"></span> Стили</div>
+        </div>
       </div>
 
       <div class="layout">
@@ -690,7 +762,7 @@
   });
 
   // ============================================================
-  //                    АВТОРИЗАЦИЯ (из файла users.js)
+  //                    АВТОРИЗАЦИЯ
   // ============================================================
   if (!window.APP_USERS) {
       console.error("ОШИБКА: Файл users.js не найден или содержит синтаксическую ошибку! Проверьте, что он лежит в той же папке и называется с маленькой буквы.");
@@ -700,7 +772,6 @@
   const SESSION_KEY = 'dk_session_login';
   const FORM_STORAGE_KEY = 'dk_form_data';
 
-  // 30 максимально совместимых эмодзи (только базовые животные)
   const CUTE_EMOJIS = [
     '🐶','🐱','🐭','🐹','🐰','🐻','🐼','🐨','🐯','🦁',
     '🐮','🐷','🐸','🐵','🐔','🐧','🐦','🐤','🐺','🐗',
@@ -708,16 +779,17 @@
   ];
 
   function pickRandomAvatar() {
+    const emoji = CUTE_EMOJIS[Math.floor(Math.random() * CUTE_EMOJIS.length)];
     const sideEl = document.getElementById('sidebarAvatar');
-    if (!sideEl) return;
-    sideEl.textContent = CUTE_EMOJIS[Math.floor(Math.random() * CUTE_EMOJIS.length)];
+    const topEl  = document.getElementById('topAvatar');
+    if (sideEl) sideEl.textContent = emoji;
+    if (topEl)  topEl.textContent  = emoji;
   }
 
-  // --- СОХРАНЕНИЕ И ВОССТАНОВЛЕНИЕ ДАННЫХ ФОРМЫ ---
   function saveFormData() {
     const data = {};
     document.querySelectorAll('.view input, .view select').forEach(el => {
-      if (el.type === 'file') return; // файлы сохранять нельзя
+      if (el.type === 'file') return;
       if (el.id) data[el.id] = el.value;
     });
     localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(data));
@@ -730,24 +802,19 @@
       const data = JSON.parse(raw);
       for (const id in data) {
         const el = document.getElementById(id);
-        if (el && el.type !== 'file') {
-          el.value = data[id];
-        }
+        if (el && el.type !== 'file') el.value = data[id];
       }
     } catch (e) {
       console.error('Ошибка при восстановлении данных формы', e);
     }
   }
 
-  // Вешаем слушатели на все поля ввода
   document.addEventListener('input', e => {
     if (e.target.closest('.view')) saveFormData();
   });
   document.addEventListener('change', e => {
     if (e.target.closest('.view')) saveFormData();
   });
-
-  // -------------------------------------------------
 
   const loginScreen = document.getElementById('loginScreen');
   const loginForm   = document.getElementById('loginForm');
@@ -765,13 +832,11 @@
     loginScreen.classList.add('hidden');
     showLoginError('');
 
-    // Скрываем запрещенные разделы
     navButtons.forEach(btn => {
       const allowed = user.views.indexOf(btn.dataset.view) !== -1;
       btn.style.display = allowed ? '' : 'none';
     });
 
-    // Устанавливаем Имя и Фамилию в верхний левый угол
     document.getElementById('sidebarUserName').textContent = user.name;
 
     const first = Array.prototype.find.call(navButtons, b => b.style.display !== 'none');
@@ -781,10 +846,8 @@
   function logout() {
     localStorage.removeItem(SESSION_KEY);
     currentUser = null;
-    
-    // Сбрасываем имя в сайдбаре на дефолтное
+
     document.getElementById('sidebarUserName').textContent = 'Пользователь';
-    
     loginScreen.classList.remove('hidden');
     document.getElementById('loginUser').value = '';
     document.getElementById('loginPass').value = '';
@@ -826,7 +889,7 @@
   (function restoreSession() {
     pickRandomAvatar();
     loadFormData();
-    
+
     const saved = localStorage.getItem(SESSION_KEY);
     if (saved && USERS[saved]) {
       currentUser = saved;
@@ -1220,7 +1283,7 @@
     $('btnDownload').disabled = true;
     $('btnPrint').disabled = true;
     $('status').style.display = 'none';
-    saveFormData(); // Сохраняем очищенное состояние
+    saveFormData();
   });
 
   // ============================================================
@@ -1291,7 +1354,7 @@
 
       ${VAC_GAP6}
 
-      <p class="title">СЛУЖЕБНАЯ ЗАПИСКА</p>
+            <p class="title">СЛУЖЕБНАЯ ЗАПИСКА</p>
 
       <p class="body">
         В связи с нахождением в ежегодном отпуске ${replaceFio}, ${post},
@@ -1390,7 +1453,7 @@
     $('btnVacDownload').disabled = true;
     $('btnVacPrint').disabled = true;
     $('vacStatus').style.display = 'none';
-    saveFormData(); // Сохраняем очищенное состояние
+    saveFormData();
   });
 
   // ============================================================
@@ -1534,7 +1597,7 @@
     $('btnOtgDownload').disabled = true;
     $('btnOtgPrint').disabled = true;
     $('otgStatus').style.display = 'none';
-    saveFormData(); // Сохраняем очищенное состояние
+    saveFormData();
   });
 
   // ============================================================
@@ -1661,15 +1724,14 @@
       processedCount++;
     }
 
-    // 1) Переименовываем "Цена EU" → "Цена РРЦ" (если такая колонка есть)
+    // 1) "Цена EU" → "Цена РРЦ"
     const euCol = priceFindHeader(data[0], 'Цена EU');
     if (euCol >= 0) data[0][euCol] = 'Цена РРЦ';
 
-    // 2) Переименовываем выбранную пользователем колонку скидки → "Цена со скидкой"
-    //    Это защищает её от удаления в списке ниже.
+    // 2) выбранную колонку скидки → "Цена со скидкой"
     data[0][priceCol] = 'Цена со скидкой';
 
-    // 3) Удаляем все остальные прайсовые колонки
+    // 3) удаляем остальные прайсовые колонки
     const toDelete = [
       'Опубликовано на сайте',
       'Цена 18%',
@@ -1787,7 +1849,7 @@
     }).join('');
 
     const more = totalRows > PREVIEW + 1
-      ? '<div style="padding:10px 14px;color:#94a3b8;font-size:12px;">… ещё ' +
+      ? '<div style="padding:10px 14px;color:#b4b9cb;font-size:12px;">… ещё ' +
         (totalRows - PREVIEW - 1) + ' строк в полном файле</div>'
       : '';
 
@@ -1883,7 +1945,7 @@
     $('pricePreviewWrap').innerHTML =
       '<div class="empty-hint">Загрузите файл и нажмите «Обработать»</div>';
     setPriceStatus('');
-    saveFormData(); // Сохраняем очищенное состояние
+    saveFormData();
   }
 
   $('priceFile').addEventListener('change', () => {
@@ -1910,7 +1972,6 @@
   //                       СТАРТ
   // ============================================================
   const today = new Date();
-  // Устанавливаем дату по умолчанию только если поле пустое (чтобы не перезаписать сохраненную)
   if (!$('dateInput').value) {
     $('dateInput').value = today.toISOString().slice(0, 10);
   }
