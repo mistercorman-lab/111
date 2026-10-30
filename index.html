@@ -572,7 +572,7 @@
     <section class="view" id="view-price">
       <div class="page-head">
         <h1>Обработка прайса для Урсуса</h1>
-        <div class="sub">Загрузите CSV или Excel, укажите наценку на залежалый товар — получите готовый XLSX со стилями.</div>
+        <div class="sub">Загрузите CSV или Excel, укажите категорию скидки и наценку на залежалый товар — получите готовый XLSX со стилями.</div>
       </div>
 
       <div class="layout">
@@ -585,8 +585,23 @@
           </div>
 
           <div class="field">
+            <label for="priceDiscount">Категория скидки (базовый столбец цены)</label>
+            <select id="priceDiscount">
+              <option value="Цена 18%">18%</option>
+              <option value="Цена 20%">20%</option>
+              <option value="Цена специалиста">Специалист</option>
+              <option value="Цена магистра">Магистр</option>
+              <option value="Цена доцента">Доцент</option>
+              <option value="Цена проф.">Профессор</option>
+              <option value="Цена гранд-проф.">Гр.Профессор</option>
+              <option value="Цена акад">Академик</option>
+              <option value="Цена милл." selected>Миллионер</option>
+            </select>
+          </div>
+
+          <div class="field">
             <label for="priceMargin">Процент наценки на залежалый товар</label>
-            <input type="number" id="priceMargin" value="30" step="0.1">
+            <input type="number" id="priceMargin" value="20" step="0.1">
           </div>
 
           <button class="btn-find" id="btnPriceProcess" type="button" disabled>Обработать</button>
@@ -1606,7 +1621,7 @@
     }
   }
 
-  function priceProcess(arrayBuffer, marginPercent) {
+  function priceProcess(arrayBuffer, marginPercent, discountColName) {
     const workbook = priceReadWorkbook(arrayBuffer);
     const sheetName = workbook.SheetNames[0];
     if (!sheetName) throw new Error('В файле нет ни одного листа.');
@@ -1617,11 +1632,11 @@
 
     const staleCol = priceFindHeader(data[0], 'Залежалость');
     const costCol  = priceFindHeader(data[0], 'СС из прайса');
-    const priceCol = priceFindHeader(data[0], 'Цена милл.');
+    const priceCol = priceFindHeader(data[0], discountColName);
 
     if (staleCol < 0) throw new Error('Не найден столбец «Залежалость».');
     if (costCol  < 0) throw new Error('Не найден столбец «СС из прайса».');
-    if (priceCol < 0) throw new Error('Не найден столбец «Цена милл.».');
+    if (priceCol < 0) throw new Error('Не найден столбец «' + discountColName + '».');
 
     let processedCount = 0;
     for (let r = 1; r < data.length; r++) {
@@ -1646,6 +1661,15 @@
       processedCount++;
     }
 
+    // 1) Переименовываем "Цена EU" → "Цена РРЦ" (если такая колонка есть)
+    const euCol = priceFindHeader(data[0], 'Цена EU');
+    if (euCol >= 0) data[0][euCol] = 'Цена РРЦ';
+
+    // 2) Переименовываем выбранную пользователем колонку скидки → "Цена со скидкой"
+    //    Это защищает её от удаления в списке ниже.
+    data[0][priceCol] = 'Цена со скидкой';
+
+    // 3) Удаляем все остальные прайсовые колонки
     const toDelete = [
       'Опубликовано на сайте',
       'Цена 18%',
@@ -1656,6 +1680,7 @@
       'Цена проф.',
       'Цена гранд-проф.',
       'Цена акад',
+      'Цена милл.',
       'СС из прайса',
       'Залежалость',
       'Режим закупки',
@@ -1675,13 +1700,6 @@
         if (Array.isArray(row) && row.length > idx) row.splice(idx, 1);
       }
     }
-
-    const rename = (oldName, newName) => {
-      const idx = priceFindHeader(data[0], oldName);
-      if (idx >= 0) data[0][idx] = newName;
-    };
-    rename('Цена EU', 'Цена РРЦ');
-    rename('Цена милл.', 'Цена со скидкой');
 
     const articleCol = priceFindHeader(data[0], 'Код артикула');
     if (articleCol >= 0) {
@@ -1798,6 +1816,12 @@
       return;
     }
 
+    const discountColName = $('priceDiscount').value;
+    if (!discountColName) {
+      setPriceStatus('Выберите категорию скидки.', 'err');
+      return;
+    }
+
     $('btnPriceProcess').disabled = true;
     $('btnPriceProcess').textContent = 'Обработка…';
     setPriceStatus('Читаем и обрабатываем файл…', '');
@@ -1806,13 +1830,14 @@
 
     reader.onload = (e) => {
       try {
-        const result = priceProcess(e.target.result, margin);
+        const result = priceProcess(e.target.result, margin, discountColName);
         priceLastResult = result;
 
         renderPricePreview(result);
 
         setPriceStatus(
-          '✓ Готово. Обработано залежалых строк: <b>' + result.processedCount +
+          '✓ Готово. Категория скидки: <b>' + esc(discountColName) +
+          '</b>. Обработано залежалых строк: <b>' + result.processedCount +
           '</b>. Удалено столбцов: <b>' + result.deletedCount + '</b>.',
           'ok'
         );
@@ -1851,7 +1876,8 @@
     priceCurrentFile = null;
     priceLastResult  = null;
     $('priceFile').value = '';
-    $('priceMargin').value = 30;
+    $('priceMargin').value = 20;
+    $('priceDiscount').value = 'Цена милл.';
     $('btnPriceProcess').disabled = true;
     $('btnPriceDownload').disabled = true;
     $('pricePreviewWrap').innerHTML =
