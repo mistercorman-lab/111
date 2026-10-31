@@ -4,1097 +4,747 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Документы</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Crect%20width='64'%20height='64'%20rx='14'%20fill='%232563eb'/%3E%3Ctext%20x='32'%20y='45'%20font-family='Arial,Helvetica,sans-serif'%20font-size='34'%20font-weight='700'%20fill='%23ffffff'%20text-anchor='middle'%3E%D0%94%D0%9A%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231c1c1e'/%3E%3Ctext x='32' y='45' font-family='Arial' font-size='34' font-weight='700' fill='%23fff' text-anchor='middle'%3EДК%3C/text%3E%3C/svg%3E">
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
-<!-- ПОДКЛЮЧАЕМ ФАЙЛ С ПОЛЬЗОВАТЕЛЯМИ -->
-<script src="users.js"></script>
 
 <style>
-  * { box-sizing: border-box; }
-  html, body { margin: 0; height: 100%; }
-  body {
-    font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-    background: #eef1f6;
-    color: #1c2430;
-  }
+/* ============ ПЕРЕМЕННЫЕ / БАЗА ============ */
+:root{
+  --bg:#f5f5f7;
+  --card:#fff;
+  --text:#1c1c1e;
+  --muted:#8e8e93;
+  --line:#e5e5ea;
+  --dark:#1c1c1e;
+  --yellow:#e8f56b;
+  --blue:#cfe0ff;
+  --pink:#ffd6e7;
+  --radius:24px;
+  --shadow:0 4px 24px rgba(20,20,40,.06);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
 
-  .app { display: flex; min-height: 100vh; }
+/* ============ ВХОД ============ */
+.login-screen{
+  position:fixed;inset:0;z-index:100;
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(160deg,#e9e9ef,#f7f7fa);padding:20px;
+}
+.login-screen.hidden{display:none}
+.login-card{
+  width:100%;max-width:360px;background:#fff;border-radius:28px;
+  padding:36px 28px;box-shadow:0 24px 60px rgba(0,0,0,.10);
+}
+.login-logo{
+  width:56px;height:56px;border-radius:16px;background:var(--dark);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;
+  margin-bottom:18px;
+}
+.login-card h2{font-size:22px;margin:0 0 22px}
+.login-error{display:none;margin-bottom:12px;padding:10px 12px;border-radius:12px;
+  background:#ffe9e9;color:#a21b1b;font-size:12.5px}
+.login-error.show{display:block}
 
-  .sidebar {
-    width: 250px; flex-shrink: 0;
-    background: #1e293b;
-    color: #cbd5e1;
-    padding: 22px 14px;
-    display: flex; flex-direction: column; gap: 22px;
-  }
-  .sidebar-brand {
-    display: flex; align-items: center; gap: 12px;
-    padding: 0 8px;
-  }
-  .sidebar-brand .mark {
-    width: 40px; height: 40px; flex-shrink: 0;
-    background: #2563eb; border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 24px; /* Увеличенный размер для эмодзи */
-  }
-  .sidebar-brand .title { color: #fff; font-size: 15px; font-weight: 600; line-height: 1.2; }
+/* ============ ПОЛЯ ============ */
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12.5px;font-weight:600;margin-bottom:6px;color:#3a3a3c}
+.field input,.field select{
+  width:100%;padding:12px 14px;font-size:14px;font-family:inherit;
+  border:1px solid var(--line);border-radius:14px;background:#fafafc;
+  outline:none;transition:.15s;color:var(--text);
+}
+.field input:focus,.field select:focus{
+  background:#fff;border-color:#b8b8c0;box-shadow:0 0 0 3px rgba(0,0,0,.04);
+}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 
-  .nav { display: flex; flex-direction: column; gap: 4px; }
-  .nav-label {
-    font-size: 10.5px; text-transform: uppercase;
-    letter-spacing: .08em; color: #64748b;
-    padding: 4px 8px 6px;
-  }
-  .nav-btn {
-    display: block; width: 100%; text-align: left;
-    padding: 11px 12px;
-    background: transparent; color: #cbd5e1;
-    border: none; border-radius: 8px;
-    font-family: inherit; font-size: 13.5px; font-weight: 500;
-    cursor: pointer; transition: .15s;
-    border-left: 3px solid transparent;
-  }
-  .nav-btn:hover { background: #334155; color: #fff; }
-  .nav-btn.active { background: #334155; color: #fff; border-left-color: #3b82f6; }
+/* ============ КНОПКИ ============ */
+.btn-primary{
+  width:100%;padding:13px 18px;font-size:15px;font-weight:600;
+  background:var(--dark);color:#fff;border:none;border-radius:16px;
+  cursor:pointer;transition:.15s;font-family:inherit;
+}
+.btn-primary:hover:not(:disabled){background:#000}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
 
-  .main { flex: 1; padding: 24px; overflow: auto; }
+.btn-ghost{
+  padding:10px 16px;font-size:13px;font-weight:500;font-family:inherit;
+  background:transparent;color:var(--text);
+  border:1px solid var(--line);border-radius:999px;cursor:pointer;transition:.15s;
+}
+.btn-ghost:hover:not(:disabled){background:#fff;box-shadow:var(--shadow)}
+.btn-ghost:disabled{opacity:.4;cursor:not-allowed}
 
-  .view { display: none; }
-  .view.active { display: block; }
+/* ============ ПРИЛОЖЕНИЕ ============ */
+.app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+.app.hidden{display:none}
 
-  .page-head { margin-bottom: 20px; }
-  .page-head h1 { font-size: 22px; margin: 0 0 4px; }
-  .page-head .sub { color: #64748b; font-size: 14px; }
+.sidebar{
+  background:#fbfbfd;border-right:1px solid var(--line);
+  padding:22px 16px;display:flex;flex-direction:column;gap:22px;
+}
+.sidebar-brand{display:flex;align-items:center;gap:12px;padding:0 8px}
+.sidebar-brand .mark{
+  width:42px;height:42px;border-radius:14px;background:var(--dark);
+  display:flex;align-items:center;justify-content:center;font-size:22px;
+}
+.sidebar-brand .title{font-size:14px;font-weight:600;line-height:1.2}
 
-  .layout { display: grid; grid-template-columns: 440px 1fr; gap: 22px; align-items: start; }
-  @media (max-width: 1100px) { .layout { grid-template-columns: 1fr; } }
+.nav{display:flex;flex-direction:column;gap:4px}
+.nav-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--muted);padding:4px 8px 6px}
+.nav-btn{
+  text-align:left;padding:11px 16px;background:transparent;border:none;
+  border-radius:999px;font-family:inherit;font-size:13.5px;font-weight:500;
+  color:#3a3a3c;cursor:pointer;transition:.15s;
+}
+.nav-btn:hover{background:#fff}
+.nav-btn.active{background:var(--dark);color:#fff}
 
-  .card {
-    background: #fff; border-radius: 14px; padding: 22px;
-    box-shadow: 0 2px 14px rgba(20,40,80,.08);
-  }
-  .card h2 {
-    font-size: 14px; margin: 0 0 16px;
-    text-transform: uppercase; letter-spacing: .05em; color: #475569;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .card h2 .badge {
-    background: #dbeafe; color: #1e40af;
-    font-size: 10px; font-weight: 700;
-    padding: 2px 6px; border-radius: 4px;
-    text-transform: none; letter-spacing: 0;
-  }
+.sidebar-user{margin-top:auto;padding-top:14px;border-top:1px solid var(--line)}
 
-  .field { margin-bottom: 14px; }
-  .field label {
-    display: block; font-size: 12.5px; font-weight: 600;
-    color: #334155; margin-bottom: 6px;
-  }
-  .field input, .field select {
-    width: 100%; padding: 12px 14px;
-    font-size: 14px; font-family: inherit;
-    border: 1px solid #cbd5e1; border-radius: 9px;
-    outline: none; transition: .15s;
-    background: #fbfcfe; color: #1c2430;
-  }
-  .field input:focus, .field select:focus {
-    border-color: #3b82f6; background: #fff;
-    box-shadow: 0 0 0 3px rgba(59,130,246,.15);
-  }
-  .field input::placeholder { color: #94a3b8; }
-  .field input[type=file] { padding: 9px; }
+/* ============ MAIN ============ */
+.main{padding:32px 40px;overflow:auto}
+.page-head{margin-bottom:28px}
+.page-head h1{font-size:44px;line-height:1.05;letter-spacing:-.02em;margin:0 0 8px}
+.page-head .sub{color:var(--muted);font-size:14px}
 
-  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+/* ============ СЕТКА КАРТОЧЕК ============ */
+.dash-grid{display:grid;gap:20px;grid-template-columns:repeat(12,1fr)}
+.card{
+  background:var(--card);border-radius:var(--radius);
+  padding:24px;box-shadow:var(--shadow);
+}
+.span-4{grid-column:span 4}
+.span-5{grid-column:span 5}
+.span-6{grid-column:span 6}
+.span-7{grid-column:span 7}
+.span-8{grid-column:span 8}
+.span-12{grid-column:span 12}
 
-  .btn-find {
-    width: 100%;
-    padding: 13px 18px; margin-top: 6px;
-    font-size: 15px; font-weight: 600; font-family: inherit;
-    background: #2563eb; color: #fff;
-    border: none; border-radius: 10px; cursor: pointer;
-    transition: .15s;
-  }
-  .btn-find:hover:not(:disabled) { background: #1d4ed8; }
-  .btn-find:disabled { opacity: .6; cursor: wait; }
+@media (max-width:1200px){
+  .span-4,.span-5,.span-6,.span-7,.span-8{grid-column:span 12}
+}
+@media (max-width:900px){
+  .app{grid-template-columns:1fr}
+  .sidebar{flex-direction:row;overflow-x:auto;border-right:none;
+    border-bottom:1px solid var(--line);gap:8px;padding:14px}
+  .sidebar-brand{display:none}
+  .nav{flex-direction:row}
+  .nav-label{display:none}
+  .sidebar-user{margin:0;padding:0;border:none}
+  .main{padding:20px}
+  .page-head h1{font-size:32px}
+}
 
-  .api-msg {
-    margin-top: 12px; font-size: 12.5px; line-height: 1.55;
-    display: none;
-    padding: 9px 11px; border-radius: 8px;
-  }
-  .api-msg.show    { display: block; }
-  .api-msg.loading { color: #1e40af; background: #eff6ff; }
-  .api-msg.ok      { color: #166534; background: #f0fdf4; }
-  .api-msg.err     { color: #b91c1c; background: #fef2f2; }
+/* ============ ПЛАШКИ / СТАТУСЫ ============ */
+.chip{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;
+  border-radius:999px;font-size:11.5px;font-weight:600}
+.chip.yellow{background:var(--yellow)}
+.chip.blue{background:var(--blue)}
+.chip.pink{background:var(--pink)}
 
-  .status {
-    margin-top: 14px; padding: 10px 12px; border-radius: 9px;
-    font-size: 12.5px; line-height: 1.55;
-    background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;
-    display: none;
-  }
-  .status.ok   { background: #f0fdf4; border-color: #bbf7d0; color: #166534; }
-  .status.warn { background: #fffbeb; border-color: #fde68a; color: #92400e; }
-  .status.err  { background: #fef2f2; border-color: #fecaca; color: #b91c1c; }
-  .status .miss { color: #b91c1c; font-weight: 600; }
+.status{margin-top:14px;padding:12px 14px;border-radius:14px;
+  font-size:12.5px;line-height:1.5;display:none}
+.status.show{display:block}
+.status.ok{background:#eefbe9;color:#226b1e}
+.status.warn{background:#fff6e0;color:#8a5a00}
+.status.err{background:#ffe9e9;color:#a21b1b}
 
-  .buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
-  .row { display: flex; gap: 10px; }
-  .row > * { flex: 1; }
+/* ============ ПРЕВЬЮ ДОКУМЕНТА ============ */
+.sheet{
+  width:100%;aspect-ratio:210/297;overflow:auto;background:#fff;
+  border-radius:16px;border:1px solid var(--line);padding:7% 7% 7% 8%;
+}
+.paper{font-family:"Times New Roman",serif;font-size:12pt;line-height:1.5;color:#000}
+.paper p{margin:0}
+.empty-hint{color:var(--muted);text-align:center;margin-top:90px;font-size:14px}
 
-  .btn-sec {
-    font-family: inherit; font-size: 14px; font-weight: 600; padding: 12px 16px;
-    border-radius: 10px; cursor: pointer; transition: .15s;
-    background: #eef2f7; color: #334155; border: 1px solid #d7dee8;
-  }
-  .btn-sec:hover:not(:disabled) { background: #e2e8f0; }
-  .btn-sec:disabled { opacity: .45; cursor: not-allowed; }
-
-  .btn-link {
-    background: none; border: none; padding: 4px 0;
-    font-size: 12px; color: #64748b;
-    text-decoration: underline; cursor: pointer;
-    font-family: inherit;
-  }
-  .btn-link:hover { color: #1d4ed8; }
-
-  .preview-shell {
-    background: #fff; border-radius: 14px;
-    box-shadow: 0 2px 14px rgba(20,40,80,.08); padding: 14px;
-  }
-  .preview-label {
-    font-size: 12px; text-transform: uppercase;
-    letter-spacing: .05em; color: #94a3b8;
-    margin: 4px 0 12px 6px;
-  }
-  .sheet {
-    width: 100%; aspect-ratio: 210 / 297;
-    overflow: auto; background: #fff;
-    border: 1px solid #e2e8f0; border-radius: 6px;
-    padding: 7% 7% 7% 8%;
-  }
-
-  /* ---- Превью таблицы для модуля «Обработка прайса» ---- */
-  .price-table-wrap {
-    width: 100%;
-    max-height: 72vh;
-    overflow: auto;
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    position: relative;
-  }
-  .price-table {
-    border-collapse: collapse;
-    font-size: 12px;
-    white-space: nowrap;
-    min-width: 100%;
-  }
-  .price-table th, .price-table td {
-    padding: 7px 10px;
-    border-bottom: 1px solid #eef1f6;
-    border-right: 1px solid #f1f5f9;
-    text-align: left;
-    vertical-align: top;
-    max-width: 260px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .price-table th {
-    background: #f1f5f9;
-    color: #334155;
-    font-weight: 600;
-    position: sticky;
-    top: 0;
-    z-index: 1;
-  }
-  .price-table tr:hover td { background: #f8fafc; }
-  .price-table .row-num {
-    color: #94a3b8;
-    background: #f8fafc;
-    position: sticky;
-    left: 0;
-    z-index: 1;
-  }
-  .price-table th.row-num { z-index: 2; }
-
-  .paper {
-    font-family: "Times New Roman", Times, serif;
-    font-size: 12pt; line-height: 1.5; color: #000;
-  }
-  .paper p { margin: 0; }
-
-  /* ------- Письмо ЧЗ ------- */
-  #paper .head { width: 100%; border-collapse: collapse; }
-  #paper .head td { vertical-align: top; padding: 0; }
-  #paper .head .left { width: 52%; padding-right: 14px; }
-  #paper .head .right { width: 48%; padding-left: 22px; }
-  #paper .head .left p { margin: 0 0 8px; text-align: left; }
-  #paper .head .right p { margin: 0 0 4px; text-align: left; }
-  #paper h2 {
-    text-align: center; font-size: 12pt; font-weight: bold;
-    margin: 0 0 24px; letter-spacing: .02em;
-  }
-  #paper .body { margin: 0 0 14px; text-align: justify; text-indent: 1.25cm; }
-  #paper .sign { width: 100%; border-collapse: collapse; }
-  #paper .sign td { vertical-align: top; padding: 0; }
-  #paper .sign .s-left { width: 44%; padding-right: 12px; }
-  #paper .sign .s-right { width: 56%; padding-left: 26px; }
-  #paper .sign p { margin: 0 0 16px; text-align: left; }
-  #paper .sign p:last-child { margin-bottom: 0; }
-  #paper .sign .who { margin-bottom: 22px; }
-  #paper .sign .mp { margin-top: 22px; }
-
-  /* ------- Служебная записка ------- */
-  #vacPaper { font-family: "Times New Roman", Times, serif; font-size: 12pt; line-height: 1.5; color: #000; }
-  #vacPaper p { margin: 0; }
-  #vacPaper .addressee { text-align: right; margin-bottom: 40px; line-height: 1.35; }
-  #vacPaper .title {
-    text-align: center; font-weight: bold;
-    font-size: 13pt; margin: 30px 0 40px;
-    letter-spacing: .06em;
-  }
-  #vacPaper .body { text-align: justify; text-indent: 1.25cm; margin-bottom: 10px; }
-  #vacPaper .date-line { margin-bottom: 22px; text-align: left; }
-  #vacPaper .sign-role { margin-bottom: 8px; }
-  #vacPaper .sign-line { text-align: left; }
-
-  /* ------- Заявление на отгул ------- */
-  #otgPaper { font-family: "Times New Roman", Times, serif; font-size: 12pt; line-height: 1.5; color: #000; }
-  #otgPaper p { margin: 0; }
-  #otgPaper .addressee { text-align: right; line-height: 1.35; }
-  #otgPaper .title {
-    text-align: center; font-weight: bold;
-    font-size: 13pt; letter-spacing: .06em;
-    margin: 0;
-  }
-  #otgPaper .body { text-align: justify; text-indent: 1.25cm; }
-  #otgPaper .sign-row { text-align: left; }
-  #otgPaper .chief-title { text-align: left; }
-  #otgPaper .chief-line { text-align: left; }
-
-  .empty-hint {
-    color: #94a3b8; font-family: sans-serif;
-    font-size: 14px; text-align: center; margin-top: 90px;
-  }
-
-  /* ------- Экран входа ------- */
-  .login-screen {
-    position: fixed; inset: 0; z-index: 1000;
-    background: linear-gradient(160deg, #1e293b 0%, #0f172a 100%);
-    display: flex; align-items: center; justify-content: center;
-    padding: 20px;
-  }
-  .login-screen.hidden { display: none; }
-
-  .login-card {
-    width: 100%; max-width: 340px;
-    background: #fff; border-radius: 16px;
-    padding: 32px 26px;
-    box-shadow: 0 24px 60px rgba(0,0,0,.45);
-  }
-
-  .login-error {
-    display: none; margin-bottom: 12px;
-    padding: 9px 11px; border-radius: 8px;
-    background: #fef2f2; color: #b91c1c;
-    font-size: 12.5px; line-height: 1.5;
-  }
-  .login-error.show { display: block; }
-
-  /* ------- Блок пользователя в сайдбаре ------- */
-  .sidebar-user {
-    margin-top: auto;
-    padding: 14px 8px 0;
-    border-top: 1px solid #334155;
-  }
-  .su-logout {
-    width: 100%; padding: 8px 10px;
-    background: #334155; color: #e2e8f0;
-    border: none; border-radius: 7px;
-    font-family: inherit; font-size: 12.5px; font-weight: 500;
-    cursor: pointer; transition: .15s;
-  }
-  .su-logout:hover { background: #475569; }
+/* ============ ПРЕВЬЮ ПРАЙСА ============ */
+.price-table-wrap{
+  width:100%;max-height:72vh;overflow:auto;background:#fff;
+  border:1px solid var(--line);border-radius:16px;
+}
+.price-table{border-collapse:collapse;font-size:12px;white-space:nowrap;min-width:100%}
+.price-table th,.price-table td{
+  padding:7px 10px;border-bottom:1px solid #eef1f6;border-right:1px solid #f1f5f9;
+  text-align:left;vertical-align:top;max-width:260px;overflow:hidden;text-overflow:ellipsis;
+}
+.price-table th{background:#f1f5f9;font-weight:600;position:sticky;top:0;z-index:1}
+.price-table tr:hover td{background:#f8fafc}
+.price-table .row-num{color:#94a3b8;background:#f8fafc;position:sticky;left:0;z-index:1}
+.price-table th.row-num{z-index:2}
 </style>
 </head>
 <body>
 
+<!-- ================= ВХОД ================= -->
 <div class="login-screen" id="loginScreen">
-  <form class="login-card" id="loginForm" autocomplete="on">
+  <form class="login-card" id="loginForm">
+    <div class="login-logo">ДК</div>
+    <h2>Вход в систему</h2>
     <div class="field">
       <label for="loginUser">Логин</label>
-      <input id="loginUser" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="введите логин">
+      <input id="loginUser" autocomplete="username" placeholder="введите логин">
     </div>
-
-    <div class="field" id="loginPassField">
+    <div class="field">
       <label for="loginPass">Пароль</label>
       <input id="loginPass" type="password" autocomplete="current-password" placeholder="введите пароль">
     </div>
-
     <div class="login-error" id="loginError"></div>
-
-    <button class="btn-find" type="submit">Войти</button>
+    <button class="btn-primary" type="submit">Войти</button>
   </form>
 </div>
 
-<div class="app">
+<!-- ================= ПРИЛОЖЕНИЕ ================= -->
+<div class="app hidden" id="app">
   <aside class="sidebar">
     <div class="sidebar-brand">
       <div class="mark" id="sidebarAvatar">🐶</div>
-      <!-- Сюда JS будет вставлять Имя и Фамилию -->
       <div class="title" id="sidebarUserName">Пользователь</div>
     </div>
-
     <nav class="nav">
       <div class="nav-label">Документы</div>
-      <button class="nav-btn active" data-view="codes">Вывод кодов ЧЗ</button>
-      <button class="nav-btn" data-view="vacation">Замещение в отпуске</button>
-      <button class="nav-btn" data-view="otgul">Отгул</button>
-      <button class="nav-btn" data-view="price">Обработка прайса</button>
+      <button class="nav-btn active" data-module="codes">Вывод кодов ЧЗ</button>
+      <button class="nav-btn" data-module="vacation">Замещение в отпуске</button>
+      <button class="nav-btn" data-module="otgul">Отгул</button>
+      <button class="nav-btn" data-module="price">Обработка прайса</button>
     </nav>
-
     <div class="sidebar-user">
-      <button class="su-logout" id="btnLogout" type="button">Выйти</button>
+      <button class="btn-ghost" id="btnLogout">Выйти</button>
     </div>
   </aside>
 
-  <main class="main">
-
-    <!-- ============ ВИД 1: ВЫВОД КОДОВ ЧЗ ============ -->
-    <section class="view active" id="view-codes">
-      <div class="page-head">
-        <h1>Письмо о выводе кодов маркировки</h1>
-        <div class="sub">Введите ИНН, № заказа и дату — приложение получит реквизиты с Checko и сформирует письмо.</div>
-      </div>
-
-      <div class="layout">
-        <div class="card">
-          <h2>Данные <span class="badge">Checko API</span></h2>
-
-          <div class="field">
-            <label for="innInput">ИНН клиента</label>
-            <input id="innInput" placeholder="7743798826" maxlength="12" inputmode="numeric" autocomplete="off">
-          </div>
-
-          <div class="field">
-            <label for="orderInput">Заказ №</label>
-            <input id="orderInput" placeholder="7985905" inputmode="numeric" autocomplete="off">
-          </div>
-
-          <div class="field">
-            <label for="dateInput">Дата счёта</label>
-            <input id="dateInput" type="date">
-          </div>
-
-          <button class="btn-find" id="btnFind" type="button">Найти</button>
-
-          <div class="api-msg" id="apiMsg"></div>
-          <div class="status" id="status"></div>
-
-          <div class="buttons">
-            <div class="row">
-              <button class="btn-sec" id="btnDownload" disabled>Скачать .doc</button>
-              <button class="btn-sec" id="btnPrint" disabled>Печать / PDF</button>
-            </div>
-            <button class="btn-sec" id="btnClear">Очистить</button>
-            <button class="btn-link" id="btnDebug" type="button">Показать ответ API в консоли</button>
-          </div>
-        </div>
-
-        <div>
-          <div class="preview-shell">
-            <div class="preview-label">Предпросмотр</div>
-            <div class="sheet">
-              <div id="paper" class="paper">
-                <div class="empty-hint">Заполните поля слева и нажмите «Найти»</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============ ВИД 2: ЗАМЕЩЕНИЕ В ОТПУСКЕ ============ -->
-    <section class="view" id="view-vacation">
-      <div class="page-head">
-        <h1>Служебная записка о замещении в отпуске</h1>
-        <div class="sub">Выберите сотрудников из списка — записка сформируется автоматически.</div>
-      </div>
-
-      <div class="layout">
-        <div class="card">
-          <h2>Данные записки</h2>
-
-          <div class="field">
-            <label for="vacFio">Кто заменял</label>
-            <select id="vacFio">
-              <option value="">— выберите —</option>
-              <option value="Карманова Дмитрия Сергеевича">Карманова Дмитрия Сергеевича</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label for="vacReplace">Кого заменял</label>
-            <select id="vacReplace">
-              <option value="">— выберите —</option>
-              <option value="Немировской Анастасии Дмитриевны">Немировской Анастасии Дмитриевны</option>
-              <option value="Моцного Дмитрия Александровича">Моцного Дмитрия Александровича</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label for="vacPost">Должность</label>
-            <select id="vacPost">
-              <option value="">— выберите —</option>
-              <option value="Менеджера">Менеджера</option>
-              <option value="Специалиста">Специалиста</option>
-            </select>
-          </div>
-
-          <div class="field-row">
-            <div class="field">
-              <label for="vacFrom">Замещал с</label>
-              <input id="vacFrom" type="date">
-            </div>
-            <div class="field">
-              <label for="vacTo">Замещал по</label>
-              <input id="vacTo" type="date">
-            </div>
-          </div>
-
-          <div class="field-row">
-            <div class="field">
-              <label for="vacPayMonth">Месяц выплаты</label>
-              <select id="vacPayMonth"></select>
-            </div>
-            <div class="field">
-              <label for="vacPayYear">Год выплаты</label>
-              <input id="vacPayYear" inputmode="numeric" maxlength="4" autocomplete="off">
-            </div>
-          </div>
-
-          <button class="btn-find" id="btnVacCreate" type="button">Создать записку</button>
-
-          <div class="status" id="vacStatus"></div>
-
-          <div class="buttons">
-            <div class="row">
-              <button class="btn-sec" id="btnVacDownload" disabled>Скачать .doc</button>
-              <button class="btn-sec" id="btnVacPrint" disabled>Печать / PDF</button>
-            </div>
-            <button class="btn-sec" id="btnVacClear">Очистить</button>
-          </div>
-        </div>
-
-        <div>
-          <div class="preview-shell">
-            <div class="preview-label">Предпросмотр</div>
-            <div class="sheet">
-              <div id="vacPaper">
-                <div class="empty-hint">Выберите сотрудников и нажмите «Создать записку»</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============ ВИД 3: ОТГУЛ ============ -->
-    <section class="view" id="view-otgul">
-      <div class="page-head">
-        <h1>Заявление на отгул</h1>
-        <div class="sub">Заполните поля — заявление сформируется автоматически.</div>
-      </div>
-
-      <div class="layout">
-        <div class="card">
-          <h2>Данные заявления</h2>
-
-          <div class="field">
-            <label for="otgFio">ФИО</label>
-            <select id="otgFio">
-              <option value="">— выберите —</option>
-              <option value="Карманов Дмитрий Сергеевич"
-                      data-gen="Карманова Дмитрия Сергеевича"
-                      data-short="Карманов Д. С.">
-                Карманов Дмитрий Сергеевич
-              </option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label for="otgPost">Должность</label>
-            <select id="otgPost">
-              <option value="">— выберите —</option>
-              <option value="Менеджер" data-gen="Менеджера">Менеджер</option>
-              <option value="Специалист" data-gen="Специалиста">Специалист</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label for="otgRest">Дата отдыха</label>
-            <input id="otgRest" type="date">
-          </div>
-
-          <div class="field">
-            <label for="otgOver">Дата переработки</label>
-            <input id="otgOver" type="date">
-          </div>
-
-          <button class="btn-find" id="btnOtgCreate" type="button">Создать заявление</button>
-
-          <div class="status" id="otgStatus"></div>
-
-          <div class="buttons">
-            <div class="row">
-              <button class="btn-sec" id="btnOtgDownload" disabled>Скачать .doc</button>
-              <button class="btn-sec" id="btnOtgPrint" disabled>Печать / PDF</button>
-            </div>
-            <button class="btn-sec" id="btnOtgClear">Очистить</button>
-          </div>
-        </div>
-
-        <div>
-          <div class="preview-shell">
-            <div class="preview-label">Предпросмотр</div>
-            <div class="sheet">
-              <div id="otgPaper">
-                <div class="empty-hint">Заполните поля слева и нажмите «Создать заявление»</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============ ВИД 4: ОБРАБОТКА ПРАЙСА ============ -->
-    <section class="view" id="view-price">
-      <div class="page-head">
-        <h1>Обработка прайса для Урсуса</h1>
-        <div class="sub">Загрузите CSV или Excel, укажите категорию скидки и наценку на залежалый товар — получите готовый XLSX со стилями.</div>
-      </div>
-
-      <div class="layout">
-        <div class="card">
-          <h2>Данные прайса <span class="badge">XLSX</span></h2>
-
-          <div class="field">
-            <label for="priceFile">Файл (.csv, .xlsx, .xls)</label>
-            <input type="file" id="priceFile" accept=".csv,.xlsx,.xls">
-          </div>
-
-          <div class="field">
-            <label for="priceDiscount">Категория скидки (базовый столбец цены)</label>
-            <select id="priceDiscount">
-              <option value="Цена 18%">18%</option>
-              <option value="Цена 20%">20%</option>
-              <option value="Цена специалиста">Специалист</option>
-              <option value="Цена магистра">Магистр</option>
-              <option value="Цена доцента">Доцент</option>
-              <option value="Цена проф.">Профессор</option>
-              <option value="Цена гранд-проф.">Гр.Профессор</option>
-              <option value="Цена акад">Академик</option>
-              <option value="Цена милл." selected>Миллионер</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label for="priceMargin">Процент наценки на залежалый товар</label>
-            <input type="number" id="priceMargin" value="20" step="0.1">
-          </div>
-
-          <button class="btn-find" id="btnPriceProcess" type="button" disabled>Обработать</button>
-
-          <div class="status" id="priceStatus"></div>
-
-          <div class="buttons">
-            <button class="btn-sec" id="btnPriceDownload" disabled>Скачать XLSX</button>
-            <button class="btn-sec" id="btnPriceClear">Очистить</button>
-          </div>
-        </div>
-
-        <div>
-          <div class="preview-shell">
-            <div class="preview-label">Предпросмотр результата (первые 20 строк)</div>
-            <div class="price-table-wrap" id="pricePreviewWrap">
-              <div class="empty-hint">Загрузите файл и нажмите «Обработать»</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-  </main>
+  <main class="main" id="mainContent"></main>
 </div>
 
+<!-- ===================================================== -->
+<!--           ШАБЛОНЫ МОДУЛЕЙ (HTML каждого)              -->
+<!-- ===================================================== -->
+
+<!-- МОДУЛЬ 1: ВЫВОД КОДОВ ЧЗ -->
+<template id="tpl-codes">
+<div class="page-head">
+  <h1>Вывод кодов маркировки</h1>
+  <div class="sub">Введите ИНН, № заказа и дату — данные подтянутся с Checko.</div>
+</div>
+
+<div class="dash-grid">
+  <div class="card span-4">
+    <div style="font-size:14px;text-transform:uppercase;color:var(--muted);margin:0 0 16px;display:flex;gap:8px;align-items:center">
+      Данные <span class="chip yellow">Checko API</span>
+    </div>
+    <div class="field">
+      <label for="innInput">ИНН клиента</label>
+      <input id="innInput" maxlength="12" inputmode="numeric" placeholder="7743798826">
+    </div>
+    <div class="field">
+      <label for="orderInput">Заказ №</label>
+      <input id="orderInput" inputmode="numeric" placeholder="7985905">
+    </div>
+    <div class="field">
+      <label for="dateInput">Дата счёта</label>
+      <input id="dateInput" type="date">
+    </div>
+    <button class="btn-primary" id="btnFind" type="button">Найти</button>
+    <div class="status" id="apiMsg"></div>
+    <div class="status" id="status"></div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:16px">
+      <button class="btn-ghost" id="btnDownload" disabled>Скачать .doc</button>
+      <button class="btn-ghost" id="btnPrint" disabled>Печать</button>
+      <button class="btn-ghost" id="btnClear">Очистить</button>
+    </div>
+  </div>
+
+  <div class="card span-8">
+    <div style="font-size:12px;text-transform:uppercase;color:var(--muted);margin:0 0 12px 6px">Предпросмотр</div>
+    <div class="sheet">
+      <div id="paper" class="paper">
+        <div class="empty-hint">Заполните поля слева и нажмите «Найти»</div>
+      </div>
+    </div>
+  </div>
+</div>
+</template>
+
+<!-- МОДУЛЬ 2: ЗАМЕЩЕНИЕ -->
+<template id="tpl-vacation">
+<div class="page-head">
+  <h1>Замещение в отпуске</h1>
+  <div class="sub">Служебная записка формируется автоматически из выбранных полей.</div>
+</div>
+
+<div class="dash-grid">
+  <div class="card span-4">
+    <div style="font-size:14px;text-transform:uppercase;color:var(--muted);margin:0 0 16px">Данные записки</div>
+
+    <div class="field">
+      <label for="vacFio">Кто заменял</label>
+      <select id="vacFio">
+        <option value="">— выберите —</option>
+        <option value="Карманова Дмитрия Сергеевича">Карманова Дмитрия Сергеевича</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="vacReplace">Кого заменял</label>
+      <select id="vacReplace">
+        <option value="">— выберите —</option>
+        <option value="Немировской Анастасии Дмитриевны">Немировской Анастасии Дмитриевны</option>
+        <option value="Моцного Дмитрия Александровича">Моцного Дмитрия Александровича</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="vacPost">Должность</label>
+      <select id="vacPost">
+        <option value="">— выберите —</option>
+        <option value="Менеджера">Менеджера</option>
+        <option value="Специалиста">Специалиста</option>
+      </select>
+    </div>
+
+    <div class="field-row">
+      <div class="field"><label for="vacFrom">Замещал с</label><input id="vacFrom" type="date"></div>
+      <div class="field"><label for="vacTo">Замещал по</label><input id="vacTo" type="date"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label for="vacPayMonth">Месяц выплаты</label><select id="vacPayMonth"></select></div>
+      <div class="field"><label for="vacPayYear">Год</label><input id="vacPayYear" maxlength="4" inputmode="numeric"></div>
+    </div>
+
+    <button class="btn-primary" id="btnVacCreate" type="button">Создать записку</button>
+    <div class="status" id="vacStatus"></div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:16px">
+      <button class="btn-ghost" id="btnVacDownload" disabled>Скачать .doc</button>
+      <button class="btn-ghost" id="btnVacPrint" disabled>Печать</button>
+      <button class="btn-ghost" id="btnVacClear">Очистить</button>
+    </div>
+  </div>
+
+  <div class="card span-8">
+    <div style="font-size:12px;text-transform:uppercase;color:var(--muted);margin:0 0 12px 6px">Предпросмотр</div>
+    <div class="sheet">
+      <div id="vacPaper" class="paper">
+        <div class="empty-hint">Выберите сотрудников и нажмите «Создать записку»</div>
+      </div>
+    </div>
+  </div>
+</div>
+</template>
+
+<!-- МОДУЛЬ 3: ОТГУЛ -->
+<template id="tpl-otgul">
+<div class="page-head">
+  <h1>Заявление на отгул</h1>
+  <div class="sub">Заполните поля — заявление сформируется автоматически.</div>
+</div>
+
+<div class="dash-grid">
+  <div class="card span-4">
+    <div style="font-size:14px;text-transform:uppercase;color:var(--muted);margin:0 0 16px">Данные заявления</div>
+
+    <div class="field">
+      <label for="otgFio">ФИО</label>
+      <select id="otgFio">
+        <option value="">— выберите —</option>
+        <option value="Карманов Дмитрий Сергеевич"
+                data-gen="Карманова Дмитрия Сергеевича"
+                data-short="Карманов Д. С.">Карманов Дмитрий Сергеевич</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="otgPost">Должность</label>
+      <select id="otgPost">
+        <option value="">— выберите —</option>
+        <option value="Менеджер" data-gen="Менеджера">Менеджер</option>
+        <option value="Специалист" data-gen="Специалиста">Специалист</option>
+      </select>
+    </div>
+
+    <div class="field"><label for="otgRest">Дата отдыха</label><input id="otgRest" type="date"></div>
+    <div class="field"><label for="otgOver">Дата переработки</label><input id="otgOver" type="date"></div>
+
+    <button class="btn-primary" id="btnOtgCreate" type="button">Создать заявление</button>
+    <div class="status" id="otgStatus"></div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:16px">
+      <button class="btn-ghost" id="btnOtgDownload" disabled>Скачать .doc</button>
+      <button class="btn-ghost" id="btnOtgPrint" disabled>Печать</button>
+      <button class="btn-ghost" id="btnOtgClear">Очистить</button>
+    </div>
+  </div>
+
+  <div class="card span-8">
+    <div style="font-size:12px;text-transform:uppercase;color:var(--muted);margin:0 0 12px 6px">Предпросмотр</div>
+    <div class="sheet">
+      <div id="otgPaper" class="paper">
+        <div class="empty-hint">Заполните поля слева и нажмите «Создать заявление»</div>
+      </div>
+    </div>
+  </div>
+</div>
+</template>
+
+<!-- МОДУЛЬ 4: ПРАЙС -->
+<template id="tpl-price">
+<div class="page-head">
+  <h1>Обработка прайса</h1>
+  <div class="sub">Загрузите CSV или Excel, укажите категорию скидки и наценку — получите готовый XLSX.</div>
+</div>
+
+<div class="dash-grid">
+  <div class="card span-4">
+    <div style="font-size:14px;text-transform:uppercase;color:var(--muted);margin:0 0 16px;display:flex;gap:8px;align-items:center">
+      Данные <span class="chip blue">XLSX</span>
+    </div>
+
+    <div class="field">
+      <label for="priceFile">Файл (.csv, .xlsx, .xls)</label>
+      <input type="file" id="priceFile" accept=".csv,.xlsx,.xls">
+    </div>
+
+    <div class="field">
+      <label for="priceDiscount">Категория скидки</label>
+      <select id="priceDiscount">
+        <option value="Цена 18%">18%</option>
+        <option value="Цена 20%">20%</option>
+        <option value="Цена специалиста">Специалист</option>
+        <option value="Цена магистра">Магистр</option>
+        <option value="Цена доцента">Доцент</option>
+        <option value="Цена проф.">Профессор</option>
+        <option value="Цена гранд-проф.">Гр.Профессор</option>
+        <option value="Цена акад">Академик</option>
+        <option value="Цена милл." selected>Миллионер</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="priceMargin">Наценка на залежалый, %</label>
+      <input type="number" id="priceMargin" value="20" step="0.1">
+    </div>
+
+    <button class="btn-primary" id="btnPriceProcess" type="button" disabled>Обработать</button>
+    <div class="status" id="priceStatus"></div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:16px">
+      <button class="btn-ghost" id="btnPriceDownload" disabled>Скачать XLSX</button>
+      <button class="btn-ghost" id="btnPriceClear">Очистить</button>
+    </div>
+  </div>
+
+  <div class="card span-8">
+    <div style="font-size:12px;text-transform:uppercase;color:var(--muted);margin:0 0 12px 6px">Предпросмотр (первые 20 строк)</div>
+    <div class="price-table-wrap" id="pricePreviewWrap">
+      <div class="empty-hint">Загрузите файл и нажмите «Обработать»</div>
+    </div>
+  </div>
+</div>
+</template>
+
+<!-- ================= JS ================= -->
 <script>
-(function () {
-  const $ = id => document.getElementById(id);
-
-  const esc = s => String(s == null ? '' : s)
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-
-  let currentUser = null;
-
-  const MONTHS_GEN = [
-    'января','февраля','марта','апреля','мая','июня',
-    'июля','августа','сентября','октября','ноября','декабря'
-  ];
-  const MONTHS_NOM = [
-    'январь','февраль','март','апрель','май','июнь',
-    'июль','август','сентябрь','октябрь','ноябрь','декабрь'
-  ];
-
-  function formatDateRu(iso) {
-    if (!iso) return '';
-    const m = String(iso).match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if (!m) return iso;
-    const [, y, mo, d] = m;
-    return '«' + d + '» ' + MONTHS_GEN[parseInt(mo,10)-1] + ' ' + y + ' г.';
+/* =====================================================
+   USERS.JS  (внутри файла)
+   ===================================================== */
+window.APP_USERS = {
+  admin: {
+    password: "admin",
+    name: "Администратор",
+    views: ["codes","vacation","otgul","price"]
+  },
+  user: {
+    password: "user",
+    name: "Пользователь",
+    views: ["codes","otgul"]
   }
-  function formatDateRuLong(iso) {
-    if (!iso) return '';
-    const m = String(iso).match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if (!m) return iso;
-    const [, y, mo, d] = m;
-    return '«' + d + '» ' + MONTHS_GEN[parseInt(mo,10)-1] + ' ' + y + ' года';
-  }
-  function isoToRu(iso) {
-    if (!iso) return '';
-    const m = String(iso).match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if (!m) return iso;
-    return m[3] + '.' + m[2] + '.' + m[1];
-  }
-  function firstOfMonthISO(iso) {
-    if (!iso) return '';
-    const m = String(iso).match(/^(\d{4})-(\d{2})/);
-    if (!m) return '';
-    return m[1] + '-' + m[2] + '-01';
-  }
+};
 
-  // ============ Переключение видов ============
-  const navButtons = document.querySelectorAll('.nav-btn');
-  const views = document.querySelectorAll('.view');
-  function switchView(name) {
-    if (currentUser) {
-      const u = USERS[currentUser];
-      if (!u || u.views.indexOf(name) === -1) return;
-    }
-    navButtons.forEach(b => b.classList.toggle('active', b.dataset.view === name));
-    views.forEach(v => v.classList.toggle('active', v.id === 'view-' + name));
+/* =====================================================
+   COMMON — утилиты
+   ===================================================== */
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '')
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+  .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+const MONTHS_GEN = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+const MONTHS_NOM = ['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'];
+
+function formatDateRu(iso){
+  if (!iso) return '';
+  const m = String(iso).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return iso;
+  return `«${m[3]}» ${MONTHS_GEN[+m[2]-1]} ${m[1]} г.`;
+}
+function isoToRu(iso){
+  const m = String(iso||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return m ? `${m[3]}.${m[2]}.${m[1]}` : iso;
+}
+function firstOfMonthISO(iso){
+  const m = String(iso||'').match(/^(\d{4})-(\d{2})/);
+  return m ? `${m[1]}-${m[2]}-01` : '';
+}
+
+function downloadDoc(html, filename){
+  const head = `<html xmlns:o="urn:schemas-microsoft-com:office:office"
+    xmlns:w="urn:schemas-microsoft-com:office:word"
+    xmlns="http://www.w3.org/TR/REC-html40">
+    <head><meta charset="utf-8"><title>Документ</title>
+    <style>
+      @page{size:A4;margin:2cm 2cm 2cm 2.5cm}
+      body{font-family:"Times New Roman",serif;font-size:12pt;line-height:1.5}
+      p{margin:0}
+      table{width:100%;border-collapse:collapse}
+      td{vertical-align:top;padding:0}
+    </style></head><body>`;
+  const blob = new Blob(['\ufeff' + head + html + '</body></html>'],
+    {type:'application/msword;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 3000);
+}
+
+function openPrint(html, title){
+  const w = window.open('', '_blank');
+  w.document.write(`<html><head><meta charset="utf-8"><title>${title}</title>
+    <style>
+      @page{size:A4;margin:2cm 2cm 2cm 2.5cm}
+      body{font-family:"Times New Roman",serif;font-size:12pt;line-height:1.5}
+      p{margin:0}
+    </style></head><body>${html}</body></html>`);
+  w.document.close(); w.focus();
+  setTimeout(() => w.print(), 300);
+}
+
+/* =====================================================
+   APP — авторизация, навигация, модули
+   ===================================================== */
+const USERS = window.APP_USERS;
+const SESSION_KEY = 'dk_session_login';
+let currentUser = null;
+
+const loginScreen = $('loginScreen');
+const loginForm   = $('loginForm');
+const loginError  = $('loginError');
+const appEl       = $('app');
+const mainEl      = $('mainContent');
+
+function showErr(msg){
+  loginError.textContent = msg || '';
+  loginError.classList.toggle('show', !!msg);
+}
+
+/* --- РЕЕСТР МОДУЛЕЙ ---
+   Каждый модуль = объект { html, init }
+   html — id <template>, init — функция привязки событий.
+*/
+const MODULES = {
+  codes:    { tpl: 'tpl-codes',    init: initCodes },
+  vacation: { tpl: 'tpl-vacation', init: initVacation },
+  otgul:    { tpl: 'tpl-otgul',    init: initOtgul },
+  price:    { tpl: 'tpl-price',    init: initPrice }
+};
+
+const initialized = new Set();
+
+function switchModule(name){
+  if (currentUser) {
+    const u = USERS[currentUser];
+    if (!u || !u.views.includes(name)) return;
   }
-  navButtons.forEach(btn => {
-    btn.addEventListener('click', () => switchView(btn.dataset.view));
+  document.querySelectorAll('.nav-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.module === name));
+
+  const mod = MODULES[name];
+  if (!mod) return;
+
+  // вставляем HTML из шаблона
+  const tpl = document.getElementById(mod.tpl);
+  mainEl.innerHTML = '';
+  mainEl.appendChild(tpl.content.cloneNode(true));
+
+  // init вызываем один раз на модуль (или каждый раз — на ваш выбор)
+  mod.init();
+}
+
+function applySession(){
+  const user = USERS[currentUser];
+  if (!user) return;
+  loginScreen.classList.add('hidden');
+  appEl.classList.remove('hidden');
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.style.display = user.views.includes(btn.dataset.module) ? '' : 'none';
   });
+  $('sidebarUserName').textContent = user.name;
+  const first = [...document.querySelectorAll('.nav-btn')]
+    .find(b => b.style.display !== 'none');
+  if (first) switchModule(first.dataset.module);
+}
 
-  // ============================================================
-  //                    АВТОРИЗАЦИЯ (из файла users.js)
-  // ============================================================
-  if (!window.APP_USERS) {
-      console.error("ОШИБКА: Файл users.js не найден или содержит синтаксическую ошибку! Проверьте, что он лежит в той же папке и называется с маленькой буквы.");
-  }
-  const USERS = window.APP_USERS || {};
+function logout(){
+  localStorage.removeItem(SESSION_KEY);
+  currentUser = null;
+  appEl.classList.add('hidden');
+  loginScreen.classList.remove('hidden');
+  loginForm.reset();
+  showErr('');
+  $('loginUser').focus();
+}
 
-  const SESSION_KEY = 'dk_session_login';
-  const FORM_STORAGE_KEY = 'dk_form_data';
+loginForm.addEventListener('submit', e => {
+  e.preventDefault();
+  const login = $('loginUser').value.trim().toLowerCase();
+  const pass  = $('loginPass').value;
+  const user  = USERS[login];
+  if (!login) { showErr('Введите логин.'); return; }
+  if (!user)  { showErr('Пользователь не найден.'); return; }
+  if (user.password && user.password !== pass) { showErr('Неверный пароль.'); return; }
+  currentUser = login;
+  localStorage.setItem(SESSION_KEY, login);
+  $('loginPass').value = '';
+  applySession();
+});
 
-  // 30 максимально совместимых эмодзи (только базовые животные)
-  const CUTE_EMOJIS = [
-    '🐶','🐱','🐭','🐹','🐰','🐻','🐼','🐨','🐯','🦁',
-    '🐮','🐷','🐸','🐵','🐔','🐧','🐦','🐤','🐺','🐗',
-    '🐴','🐝','🐛','🐌','🐞','🐢','🐘','🐫','🐟','🐬'
-  ];
+$('btnLogout').addEventListener('click', logout);
+document.querySelectorAll('.nav-btn').forEach(btn =>
+  btn.addEventListener('click', () => switchModule(btn.dataset.module)));
 
-  function pickRandomAvatar() {
-    const sideEl = document.getElementById('sidebarAvatar');
-    if (!sideEl) return;
-    sideEl.textContent = CUTE_EMOJIS[Math.floor(Math.random() * CUTE_EMOJIS.length)];
-  }
+// восстановление сессии
+(function(){
+  const saved = localStorage.getItem(SESSION_KEY);
+  if (saved && USERS[saved]) { currentUser = saved; applySession(); }
+  else { $('loginUser').focus(); }
 
-  // --- СОХРАНЕНИЕ И ВОССТАНОВЛЕНИЕ ДАННЫХ ФОРМЫ ---
-  function saveFormData() {
-    const data = {};
-    document.querySelectorAll('.view input, .view select').forEach(el => {
-      if (el.type === 'file') return; // файлы сохранять нельзя
-      if (el.id) data[el.id] = el.value;
-    });
-    localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(data));
-  }
+  const EMOJI = ['🐶','🐱','🐭','🐹','🐰','🐻','🐼','🐨','🐯','🦁'];
+  $('sidebarAvatar').textContent = EMOJI[Math.floor(Math.random()*EMOJI.length)];
+})();
 
-  function loadFormData() {
-    const raw = localStorage.getItem(FORM_STORAGE_KEY);
-    if (!raw) return;
-    try {
-      const data = JSON.parse(raw);
-      for (const id in data) {
-        const el = document.getElementById(id);
-        if (el && el.type !== 'file') {
-          el.value = data[id];
-        }
-      }
-    } catch (e) {
-      console.error('Ошибка при восстановлении данных формы', e);
-    }
-  }
+/* =====================================================
+   МОДУЛЬ 1: ВЫВОД КОДОВ ЧЗ  (продолжение)
+   ===================================================== */
+function initCodes(){
+  codesLastCompany = null;
+  codesLastHtml = '';
 
-  // Вешаем слушатели на все поля ввода
-  document.addEventListener('input', e => {
-    if (e.target.closest('.view')) saveFormData();
-  });
-  document.addEventListener('change', e => {
-    if (e.target.closest('.view')) saveFormData();
-  });
+  const apiMsg = $('apiMsg');
 
-  // -------------------------------------------------
-
-  const loginScreen = document.getElementById('loginScreen');
-  const loginForm   = document.getElementById('loginForm');
-  const loginError  = document.getElementById('loginError');
-
-  function showLoginError(msg) {
-    loginError.textContent = msg || '';
-    loginError.classList.toggle('show', !!msg);
+  function setMsg(text, kind){
+    apiMsg.textContent = text || '';
+    apiMsg.className = 'status' + (text ? ' show ' + (kind||'') : '');
   }
 
-  function applySession() {
-    const user = USERS[currentUser];
-    if (!user) return;
-
-    loginScreen.classList.add('hidden');
-    showLoginError('');
-
-    // Скрываем запрещенные разделы
-    navButtons.forEach(btn => {
-      const allowed = user.views.indexOf(btn.dataset.view) !== -1;
-      btn.style.display = allowed ? '' : 'none';
-    });
-
-    // Устанавливаем Имя и Фамилию в верхний левый угол
-    document.getElementById('sidebarUserName').textContent = user.name;
-
-    const first = Array.prototype.find.call(navButtons, b => b.style.display !== 'none');
-    if (first) switchView(first.dataset.view);
+  function shortFio(full){
+    const p = String(full||'').trim().split(/\s+/).filter(Boolean);
+    if (p.length < 2) return full;
+    return p[0] + ' ' + p.slice(1).map(w => w[0].toUpperCase()+'.').join('');
   }
 
-  function logout() {
-    localStorage.removeItem(SESSION_KEY);
-    currentUser = null;
-    
-    // Сбрасываем имя в сайдбаре на дефолтное
-    document.getElementById('sidebarUserName').textContent = 'Пользователь';
-    
-    loginScreen.classList.remove('hidden');
-    document.getElementById('loginUser').value = '';
-    document.getElementById('loginPass').value = '';
-    showLoginError('');
-    document.getElementById('loginUser').focus();
+  async function fetchCompany(inn){
+    const isIp = String(inn).length === 12;
+    const url = (isIp ? URL_IP : URL_COMPANY) +
+      '?key=' + encodeURIComponent(CHECKO_KEY) +
+      '&inn=' + encodeURIComponent(inn);
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('Сервис вернул код ' + r.status);
+    const j = await r.json();
+    if (!j || !j.meta || j.meta.status !== 'ok')
+      throw new Error((j?.meta?.message) || 'Компания не найдена');
+    return { data: j.data, isIp };
   }
 
-  loginForm.addEventListener('submit', e => {
-    e.preventDefault();
-    const login = document.getElementById('loginUser').value.trim().toLowerCase();
-    const pass  = document.getElementById('loginPass').value;
-    const user  = USERS[login];
-
-    if (!login) {
-      showLoginError('Введите логин.');
-      document.getElementById('loginUser').focus();
-      return;
-    }
-    if (!user) {
-      showLoginError('Пользователь не найден.');
-      document.getElementById('loginPass').value = '';
-      return;
-    }
-    if (user.password && user.password !== pass) {
-      showLoginError('Неверный пароль.');
-      document.getElementById('loginPass').value = '';
-      document.getElementById('loginPass').focus();
-      return;
-    }
-
-    currentUser = login;
-    localStorage.setItem(SESSION_KEY, login);
-    document.getElementById('loginPass').value = '';
-    applySession();
-  });
-
-  document.getElementById('btnLogout').addEventListener('click', logout);
-
-  (function restoreSession() {
-    pickRandomAvatar();
-    loadFormData();
-    
-    const saved = localStorage.getItem(SESSION_KEY);
-    if (saved && USERS[saved]) {
-      currentUser = saved;
-      applySession();
-    } else {
-      document.getElementById('loginUser').focus();
-    }
-  })();
-
-  // ============================================================
-  //              МОДУЛЬ 1: ВЫВОД КОДОВ ЧЗ
-  // ============================================================
-  const CHECKO_API_KEY = 'xETljoqfth6gO2yz';
-  const CHECKO_COMPANY_URL      = 'https://api.checko.ru/v2/company';
-  const CHECKO_ENTREPRENEUR_URL = 'https://api.checko.ru/v2/entrepreneur';
-
-  function shortFio(full) {
-    if (!full) return '';
-    const parts = String(full).trim().split(/\s+/).filter(Boolean);
-    if (parts.length < 2) return full;
-    const [fam, ...rest] = parts;
-    return fam + ' ' + rest.slice(0, 2).map(w => w[0] ? w[0].toUpperCase() + '.' : '').join('');
-  }
-  function deepFind(obj, keys, depth) {
-    depth = depth || 0;
-    if (!obj || typeof obj !== 'object' || depth > 5) return '';
-    for (const k of keys) {
-      const v = obj[k];
-      if (v != null && typeof v !== 'object' && String(v).trim()) return String(v).trim();
-    }
-    for (const k in obj) {
-      const v = obj[k];
-      if (v && typeof v === 'object') {
-        const found = deepFind(v, keys, depth + 1);
-        if (found) return found;
-      }
-    }
-    return '';
-  }
-  function pickFirst(obj, keys) {
-    if (!obj || typeof obj !== 'object') return '';
-    for (const k of keys) {
-      const v = obj[k];
-      if (v != null && typeof v !== 'object' && String(v).trim()) return String(v).trim();
-    }
-    return '';
-  }
-
-  let lastRawResponse = null;
-  function setApiMsg(text, kind) {
-    const el = $('apiMsg');
-    el.textContent = text || '';
-    el.className = 'api-msg' + (text ? ' show ' + (kind || '') : '');
-  }
-
-  async function fetchFromChecko(inn) {
-    const isEntrepreneur = String(inn).length === 12;
-    const baseUrl = isEntrepreneur ? CHECKO_ENTREPRENEUR_URL : CHECKO_COMPANY_URL;
-    const url = baseUrl + '?key=' + encodeURIComponent(CHECKO_API_KEY)
-                         + '&inn=' + encodeURIComponent(inn);
-    const resp = await fetch(url, { method: 'GET' });
-    if (!resp.ok) throw new Error('Сервис вернул код ' + resp.status);
-    const json = await resp.json();
-    lastRawResponse = json;
-
-    if (!json || !json.meta || json.meta.status !== 'ok') {
-      const msg = (json && json.meta && json.meta.message) || 'Компания не найдена';
-      throw new Error(msg);
-    }
-    if (!json.data) throw new Error('Пустой ответ — компания не найдена');
-    return { data: json.data, isEntrepreneur };
-  }
-
-  function pickCompanyFields(data, fallbackInn, isEntrepreneur) {
-    const d = data || {};
-    let client = pickFirst(d, ['НаимСокр', 'НаимПолн', 'Наименование', 'ShortName', 'Name']);
-    if (!client && isEntrepreneur) {
-      client = pickFirst(d, ['ФИО', 'ФИОПолн', 'FullName']) || '';
-      if (client && !/^ИП\b/i.test(client)) client = 'ИП ' + client;
-    }
-    const inn = pickFirst(d, ['ИНН', 'INN']) || fallbackInn;
-    const kpp = isEntrepreneur ? '' : pickFirst(d, ['КПП', 'KPP']);
-
-    const adrObj = d['ЮрАдрес'] || d['Адрес'] || d['Address'] || d;
-    let address = pickFirst(adrObj, ['АдресРФ', 'Адрес', 'АдресПолн', 'FullAddress', 'Address']);
-    if (!address) address = pickFirst(d, ['АдресРФ', 'Адрес', 'АдресПолн']);
-
-    let post = '', fioFull = '';
-    if (isEntrepreneur) {
-      post = 'Индивидуальный предприниматель';
-      fioFull = pickFirst(d, ['ФИО', 'ФИОПолн', 'FullName']) || client.replace(/^ИП\s+/, '');
-    } else {
-      let ruk = d['Руковод'] || d['Руководитель'] || d['Руководители'] || null;
-      if (Array.isArray(ruk) && ruk.length) ruk = ruk[0];
-      if (ruk && typeof ruk === 'object') {
-        post    = pickFirst(ruk, ['Должн', 'Должность', 'НаимДолжн', 'Position', 'Post']);
-        fioFull = pickFirst(ruk, ['ФИО', 'ФИОПолн', 'FullName', 'Name']);
-      }
-      if (!post)    post    = deepFind(d, ['Должн', 'Должность', 'НаимДолжн']);
-      if (!fioFull) fioFull = deepFind(d, ['ФИО', 'ФИОПолн']);
-      if (!post && fioFull) post = 'Генеральный директор';
-    }
-    return {
-      client : String(client).trim(),
-      inn    : String(inn).trim(),
-      kpp    : String(kpp).trim(),
-      address: String(address).trim(),
-      post   : String(post).trim(),
-      fio    : shortFio(fioFull),
-      isEntrepreneur: !!isEntrepreneur
-    };
-  }
-
-  const FALLBACK = {
-    client : '________________________________',
-    inn    : '____________',
-    kpp    : '____________',
-    address: '________________________________',
-    invoice: '____________',
-    invdate: '____________',
-    post   : '[Должность руководителя клиента]',
-    fio    : '[Фамилия И.О.]'
-  };
-  const GAP = '<br><br><br><br><br><br><br><br>';
-
-  function buildLetter(d) {
-    const today = new Date().toLocaleDateString('ru-RU');
-    const v = k => d[k] ? esc(d[k]) : FALLBACK[k];
-    const innKppLine = d.isEntrepreneur
-      ? `ИНН ${v('inn')}`
-      : `ИНН ${v('inn')} / КПП ${v('kpp')}`;
-
+  function buildLetter(d){
+    const v = k => esc(d[k] || '____________');
     return `
-      <table class="head">
-        <tr>
-          <td class="left">
-            <p>Полное наименование<br>организации-клиента: <b>${v('client')}</b></p>
-            <p>${innKppLine}</p>
-            <p>Адрес: ${v('address')}</p>
-          </td>
-          <td class="right">
-            <p>Управляющему ООО «ПРОЕКТ 111»</p>
-            <p>Генеральному директору</p>
-            <p>Цибину Н.А.</p>
-          </td>
-        </tr>
-      </table>
-
-      ${GAP}
-
-      <h2>Информационное письмо</h2>
-
-      <p class="body">Мы, ${v('client')} (ИНН ${v('inn')}), настоящим письмом информируем,
+      <p style="margin-bottom:8px"><b>${v('client')}</b><br>
+      ИНН ${v('inn')}${d.isIp ? '' : ' / КПП ' + v('kpp')}<br>
+      Адрес: ${v('address')}</p>
+      <p style="text-align:right;margin-top:12px">Управляющему ООО «ПРОЕКТ 111»<br>
+      Генеральному директору<br>Цибину Н.А.</p>
+      <h2 style="text-align:center;font-size:12pt;margin:36px 0 24px">Информационное письмо</h2>
+      <p style="text-indent:1.25cm;text-align:justify;margin-bottom:12px">
+        Мы, ${v('client')} (ИНН ${v('inn')}), настоящим письмом информируем,
         что товар с кодами маркировки, приобретаемый по УПД/счёту
         № ${v('invoice')} от ${v('invdate')}, будет использован исключительно
         для собственных нужд нашей организации и не предназначен для дальнейшей
-        реализации (перепродажи) третьим лицам.</p>
-
-      <p class="body">В связи с отсутствием факта последующей перепродажи просим
-        не передавать коды маркировки в составе первичной документации и поручаем
+        реализации (перепродажи) третьим лицам.
+      </p>
+      <p style="text-indent:1.25cm;text-align:justify">
+        В связи с отсутствием факта последующей перепродажи просим не передавать
+        коды маркировки в составе первичной документации и поручаем
         ООО «ПРОЕКТ 111» осуществить вывод кодов маркировки из оборота по схеме
         «На собственные нужды» самостоятельно, с обязательным указанием ИНН нашей
-        организации — ${v('inn')}.</p>
-
-      ${GAP}
-
-      <table class="sign">
-        <tr>
-          <td class="s-left">
-            <p>Дата: ${today}</p>
-          </td>
-          <td class="s-right">
-            <p class="who">${v('post')} / ${v('fio')}</p>
-            <p>Подпись: ____________________</p>
-            <p class="mp">М.П.</p>
-          </td>
-        </tr>
-      </table>
+        организации — ${v('inn')}.
+      </p>
+      <p style="margin-top:48px">Дата: ${new Date().toLocaleDateString('ru-RU')}</p>
+      <p style="margin-top:24px">${v('post')} / ${v('fio')}</p>
+      <p>Подпись: ____________________</p>
+      <p style="margin-top:24px">М.П.</p>
     `;
   }
 
-  function showStatus(p) {
-    const need = [
-      ['client',  'название'],
-      ['inn',     'ИНН'],
-      ['address', 'адрес'],
-      ['invoice', '№ счёта'],
-      ['invdate', 'дата счёта']
-    ];
-    if (!p.isEntrepreneur) need.splice(2, 0, ['kpp', 'КПП']);
-    const ok = [], miss = [];
-    need.forEach(([k, label]) => (p[k] ? ok : miss).push(label));
+  function render(){
+    const d = {
+      client : codesLastCompany?.client  || '',
+      inn    : codesLastCompany?.inn     || $('innInput').value.trim(),
+      kpp    : codesLastCompany?.kpp     || '',
+      address: codesLastCompany?.address || '',
+      post   : codesLastCompany?.post    || '',
+      fio    : codesLastCompany?.fio     || '',
+      invoice: $('orderInput').value.trim(),
+      invdate: isoToRu($('dateInput').value),
+      isIp   : !!codesLastCompany?.isEntrepreneur
+    };
+    codesLastHtml = buildLetter(d);
+    $('paper').innerHTML = codesLastHtml;
+    $('btnDownload').disabled = false;
+    $('btnPrint').disabled = false;
 
-    const s = $('status');
-    s.style.display = 'block';
-    if (!miss.length) {
-      s.className = 'status ok';
-      let extra = '';
-      if (p.post || p.fio) extra = ' · руководитель: <b>' + esc((p.post + ' ' + p.fio).trim()) + '</b>';
-      const typeLabel = p.isEntrepreneur ? ' (ИП, КПП не требуется)' : '';
-      s.innerHTML = '✓ Готово' + typeLabel + ': <b>' + ok.join(', ') + '</b>' + extra;
+    const need = [
+      ['client','название'],['inn','ИНН'],
+      ...(d.isIp ? [] : [['kpp','КПП']]),
+      ['address','адрес'],['invoice','№ счёта'],['invdate','дата счёта']
+    ];
+    const miss = need.filter(([k]) => !d[k]).map(([,l]) => l);
+    const st = $('status');
+    st.style.display = 'block';
+    if (!miss.length){
+      st.className = 'status ok show';
+      st.innerHTML = '✓ Готово: <b>' + need.map(([,l])=>l).join(', ') + '</b>';
     } else {
-      s.className = 'status warn';
-      s.innerHTML = 'Не найдено: <span class="miss">' + miss.join(', ') + '</span>. ' +
-        'Эти места останутся пустыми — впишите их в документ вручную.';
+      st.className = 'status warn show';
+      st.innerHTML = 'Не найдено: <b>' + miss.join(', ') + '</b>. Впишите вручную.';
     }
   }
 
-  let currentHTML = '';
-  let lastCompany = null;
-
-  function collectFormData(company) {
-    const c = company || {};
-    const order = $('orderInput').value.trim();
-    const date  = isoToRu($('dateInput').value);
-    return {
-      client : c.client  || '',
-      inn    : c.inn     || $('innInput').value.trim(),
-      kpp    : c.kpp     || '',
-      address: c.address || '',
-      post   : c.post    || '',
-      fio    : c.fio     || '',
-      invoice: order || '',
-      invdate: date  || '',
-      isEntrepreneur: !!c.isEntrepreneur
-    };
-  }
-
-  function render(company) {
-    if (company) lastCompany = company;
-    const data = collectFormData(lastCompany);
-    currentHTML = buildLetter(data);
-    $('paper').innerHTML = currentHTML;
-    $('btnDownload').disabled = false;
-    $('btnPrint').disabled = false;
-    showStatus(data);
-  }
-
-  async function handleFind() {
+  async function handleFind(){
     const inn = $('innInput').value.trim();
-    if (!/^\d{10}$|^\d{12}$/.test(inn)) {
-      setApiMsg('ИНН должен содержать 10 или 12 цифр', 'err');
+    if (!/^\d{10}$|^\d{12}$/.test(inn)){
+      setMsg('ИНН должен содержать 10 или 12 цифр', 'err');
       return;
     }
     $('btnFind').disabled = true;
     $('btnFind').textContent = 'Поиск…';
-    setApiMsg('Запрос к Checko…', 'loading');
-
+    setMsg('Запрос к Checko…', 'warn');
     try {
-      const { data, isEntrepreneur: isIp } = await fetchFromChecko(inn);
-      const company = pickCompanyFields(data, inn, isIp);
-      if (!company.client && !company.kpp && !company.address) {
-        throw new Error('Сервис вернул ответ без данных');
-      }
-      const label = isIp ? 'ИП' : 'организация';
-      const kppInfo = isIp ? '' : (company.kpp ? ' · КПП ' + company.kpp : '');
-      const bossInfo = (company.post || company.fio)
-        ? ' · ' + ((company.post || '') + ' ' + (company.fio || '')).trim()
-        : ' · руководитель не определён';
-      setApiMsg('✓ Найдено (' + label + '): ' + (company.client || '—') + kppInfo + bossInfo, 'ok');
-      render(company);
-    } catch (err) {
-      console.error(err);
-      let msg = err.message || 'Ошибка запроса';
-      if (/Failed to fetch|NetworkError/i.test(msg)) {
-        msg = 'Не удалось связаться с api.checko.ru. Проверьте интернет или настройки доступа.';
-      }
-      setApiMsg('✗ ' + msg, 'err');
+      const { data, isIp } = await fetchCompany(inn);
+      codesLastCompany = {
+        client : data['НаимСокр'] || data['НаимПолн'] || '',
+        inn    : data['ИНН'] || inn,
+        kpp    : isIp ? '' : (data['КПП'] || ''),
+        address: data['ЮрАдрес']?.['АдресРФ'] || '',
+        post   : data['Руковод']?.['Должн'] || '',
+        fio    : shortFio(data['Руковод']?.['ФИО'] || ''),
+        isEntrepreneur: isIp
+      };
+      setMsg('✓ Найдено: ' + (codesLastCompany.client || '—'), 'ok');
+      render();
+    } catch(e){
+      console.error(e);
+      setMsg('✗ ' + (e.message || 'Ошибка'), 'err');
       $('status').style.display = 'none';
     } finally {
       $('btnFind').disabled = false;
@@ -1102,820 +752,441 @@
     }
   }
 
-  function downloadDoc(html, filename) {
-    const head = `<html xmlns:o="urn:schemas-microsoft-com:office:office"
-        xmlns:w="urn:schemas-microsoft-com:office:word"
-        xmlns="http://www.w3.org/TR/REC-html40">
-      <head><meta charset="utf-8"><title>Документ</title>
-      <!--[if gte mso 9]><xml><w:WordDocument>
-        <w:View>Print</w:View><w:Zoom>100</w:Zoom>
-      </w:WordDocument></xml><![endif]-->
-      <style>
-        @page { size: A4; margin: 2cm 2cm 2cm 2.5cm; }
-        body { font-family: "Times New Roman", serif; font-size: 12pt; line-height: 1.5; }
-        p { margin: 0; }
-        table.head { width: 100%; border-collapse: collapse; }
-        table.head td { vertical-align: top; padding: 0; }
-        table.head td.left  { width: 52%; padding-right: 14px; }
-        table.head td.right { width: 48%; padding-left: 22px; }
-        table.head td.left  p { margin: 0 0 8px; text-align: left; }
-        table.head td.right p { margin: 0 0 4px; text-align: left; }
-        h2 { text-align: center; font-size: 12pt; margin: 0 0 24px; }
-        p.body { margin: 0 0 14px; text-align: justify; text-indent: 1.25cm; }
-        table.sign { width: 100%; border-collapse: collapse; }
-        table.sign td { vertical-align: top; padding: 0; }
-        table.sign td.s-left  { width: 44%; padding-right: 12px; }
-        table.sign td.s-right { width: 56%; padding-left: 26px; }
-        table.sign p { margin: 0 0 16px; text-align: left; }
-        table.sign p.who { margin-bottom: 22px; }
-        table.sign p.mp  { margin-top: 22px; margin-bottom: 0; }
-        .addressee { text-align: right; margin-bottom: 40px; line-height: 1.35; }
-        .title { text-align: center; font-weight: bold; font-size: 13pt; margin: 30px 0 40px; letter-spacing: .06em; }
-        .date-line { margin-bottom: 22px; }
-        .sign-role { margin-bottom: 8px; }
-        .addressee-right { text-align: right; line-height: 1.35; }
-        .title-otg { text-align: center; font-weight: bold; font-size: 13pt; letter-spacing: .06em; margin: 0; }
-        .body-otg { text-align: justify; text-indent: 1.25cm; margin: 0; }
-        .sign-row { text-align: left; margin: 0; }
-        .chief-title { margin: 0; }
-        .chief-line { margin: 0; }
-      </style></head><body>`;
-
-    const blob = new Blob(
-      ['\ufeff' + head + html + '</body></html>'],
-      { type: 'application/msword;charset=utf-8' }
-    );
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 3000);
-  }
-
-  function download() {
-    const data = collectFormData(lastCompany);
-    const safeName = ((data.client || 'Письмо')
-      .replace(/[«»"]/g, '')
-      .replace(/[\\/:*?<>|]/g, '')
-      .replace(/\s+/g, ' ').trim().slice(0, 60)) || 'Письмо';
-    downloadDoc(buildLetter(data), 'Информационное письмо — ' + safeName + '.doc');
-  }
-
-  function printLetter() {
-    render(lastCompany);
-    const w = window.open('', '_blank');
-    w.document.write(`<html><head><meta charset="utf-8"><title>Информационное письмо</title>
-      <style>
-        @page { size: A4; margin: 2cm 2cm 2cm 2.5cm; }
-        body { font-family: "Times New Roman", serif; font-size: 12pt; line-height: 1.5; }
-        p { margin: 0; }
-        table.head { width: 100%; border-collapse: collapse; }
-        table.head td { vertical-align: top; padding: 0; }
-        table.head td.left  { width: 52%; padding-right: 14px; }
-        table.head td.right { width: 48%; padding-left: 22px; }
-        table.head td.left  p { margin: 0 0 8px; text-align: left; }
-        table.head td.right p { margin: 0 0 4px; text-align: left; }
-        h2 { text-align: center; font-size: 12pt; margin: 0 0 24px; }
-        p.body { margin: 0 0 14px; text-align: justify; text-indent: 1.25cm; }
-        table.sign { width: 100%; border-collapse: collapse; }
-        table.sign td { vertical-align: top; padding: 0; }
-        table.sign td.s-left  { width: 44%; padding-right: 12px; }
-        table.sign td.s-right { width: 56%; padding-left: 26px; }
-        table.sign p { margin: 0 0 16px; text-align: left; }
-        table.sign p.who { margin-bottom: 22px; }
-        table.sign p.mp  { margin-top: 22px; margin-bottom: 0; }
-      </style></head><body>${currentHTML}</body></html>`);
-    w.document.close();
-    w.focus();
-    setTimeout(() => w.print(), 300);
-  }
-
+  // биндинги
   $('btnFind').addEventListener('click', handleFind);
-  $('innInput').addEventListener('input', e => {
-    e.target.value = e.target.value.replace(/\D/g, '').slice(0, 12);
+  $('btnDownload').addEventListener('click', () => {
+    if (codesLastHtml) downloadDoc(codesLastHtml, 'Информационное письмо.doc');
   });
-  $('innInput').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); handleFind(); } });
-  $('orderInput').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); handleFind(); } });
-  $('dateInput').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); handleFind(); } });
-  $('btnDownload').addEventListener('click', download);
-  $('btnPrint').addEventListener('click', printLetter);
-  $('btnDebug').addEventListener('click', () => {
-    if (!lastRawResponse) { alert('Сначала нажмите «Найти» — тогда будет что показать.'); return; }
-    console.log('[Checko API] последний ответ целиком:', lastRawResponse);
-    console.log('[Checko API] data:', lastRawResponse.data);
-    alert('Ответ API выведен в консоль браузера.\nОткройте DevTools → Console (F12).');
+  $('btnPrint').addEventListener('click', () => {
+    if (codesLastHtml) openPrint(codesLastHtml, 'Информационное письмо');
   });
   $('btnClear').addEventListener('click', () => {
-    $('innInput').value = '';
-    $('orderInput').value = '';
-    $('dateInput').value = '';
-    setApiMsg('');
-    lastCompany = null;
-    lastRawResponse = null;
-    currentHTML = '';
+    ['innInput','orderInput','dateInput'].forEach(id => $(id).value = '');
+    codesLastCompany = null; codesLastHtml = '';
     $('paper').innerHTML = '<div class="empty-hint">Заполните поля слева и нажмите «Найти»</div>';
     $('btnDownload').disabled = true;
     $('btnPrint').disabled = true;
+    setMsg('');
     $('status').style.display = 'none';
-    saveFormData(); // Сохраняем очищенное состояние
   });
+  $('innInput').addEventListener('input', e => {
+    e.target.value = e.target.value.replace(/\D/g,'').slice(0,12);
+  });
+  $('innInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); handleFind(); }
+  });
+  if (!$('dateInput').value)
+    $('dateInput').value = new Date().toISOString().slice(0,10);
+}
 
-  // ============================================================
-  //            МОДУЛЬ 2: ЗАМЕЩЕНИЕ В ОТПУСКЕ
-  // ============================================================
-  (function fillMonths() {
-    const sel = $('vacPayMonth');
-    MONTHS_NOM.forEach((name, i) => {
-      const opt = document.createElement('option');
-      opt.value = i + 1;
-      opt.textContent = name.charAt(0).toUpperCase() + name.slice(1);
-      sel.appendChild(opt);
+/* =====================================================
+   МОДУЛЬ 2: ЗАМЕЩЕНИЕ В ОТПУСКЕ
+   ===================================================== */
+let vacHtml = '';
+
+function initVacation(){
+  vacHtml = '';
+
+  // заполняем месяцы
+  const monthSel = $('vacPayMonth');
+  if (!monthSel.options.length){
+    MONTHS_NOM.forEach((name,i) => {
+      const o = document.createElement('option');
+      o.value = i + 1;
+      o.textContent = name[0].toUpperCase() + name.slice(1);
+      monthSel.appendChild(o);
     });
-  })();
+  }
+  const now = new Date();
+  $('vacPayMonth').value = now.getMonth() + 1;
+  $('vacPayYear').value  = now.getFullYear();
 
-  (function setDefaults() {
-    const now = new Date();
-    $('vacPayMonth').value = now.getMonth() + 1;
-    $('vacPayYear').value = now.getFullYear();
-  })();
-
-  function collectVacData() {
+  function collect(){
     return {
       fio        : $('vacFio').value,
       post       : $('vacPost').value,
       fromISO    : $('vacFrom').value,
       toISO      : $('vacTo').value,
       replaceFio : $('vacReplace').value,
-      payMonth   : parseInt($('vacPayMonth').value, 10),
+      payMonth   : parseInt($('vacPayMonth').value,10),
       payYear    : $('vacPayYear').value.trim()
     };
   }
 
-  const VAC_FALLBACK = {
-    fio        : '__________________________',
-    post       : '__________________________',
-    replaceFio : '__________________________',
-    dateFrom   : '«___» ____________ 20___ г.',
-    dateTo     : '«___» ____________ 20___ г.',
-    payMonth   : '____________',
-    payYear    : '20___'
-  };
-
-  const VAC_TOP_GAP = '<br><br><br>';
-  const VAC_GAP6    = '<br><br><br><br><br><br>';
-
-  function buildVacLetter(d) {
-    const baseISO     = d.fromISO || new Date().toISOString().slice(0, 10);
-    const firstDayISO = firstOfMonthISO(baseISO) || baseISO;
-    const dateLineRu  = formatDateRu(firstDayISO);
-
-    const fio        = d.fio        ? esc(d.fio)        : VAC_FALLBACK.fio;
-    const post       = d.post       ? esc(d.post)       : VAC_FALLBACK.post;
-    const replaceFio = d.replaceFio ? esc(d.replaceFio) : VAC_FALLBACK.replaceFio;
-    const dateFrom   = d.fromISO    ? formatDateRu(d.fromISO) : VAC_FALLBACK.dateFrom;
-    const dateTo     = d.toISO      ? formatDateRu(d.toISO)   : VAC_FALLBACK.dateTo;
-    const payMonth   = (d.payMonth && MONTHS_NOM[d.payMonth - 1]) || VAC_FALLBACK.payMonth;
-    const payYear    = d.payYear ? esc(d.payYear) : VAC_FALLBACK.payYear;
+  function build(d){
+    const baseISO = d.fromISO || new Date().toISOString().slice(0,10);
+    const dateLineRu = formatDateRu(firstOfMonthISO(baseISO) || baseISO);
+    const v = k => esc(d[k] || '__________________________');
+    const dateFrom = d.fromISO ? formatDateRu(d.fromISO) : '«___» ____________ 20___ г.';
+    const dateTo   = d.toISO   ? formatDateRu(d.toISO)   : '«___» ____________ 20___ г.';
+    const payMonth = (d.payMonth && MONTHS_NOM[d.payMonth-1]) || '____________';
 
     return `
-      ${VAC_TOP_GAP}
-
-      <p class="addressee">
-        Генеральному директору<br>
-        ООО «ПРОЕКТ 111»<br>
-        Цибину Николаю Анатольевичу
-      </p>
-
-      ${VAC_GAP6}
-
-      <p class="title">СЛУЖЕБНАЯ ЗАПИСКА</p>
-
-      <p class="body">
-        В связи с нахождением в ежегодном отпуске ${replaceFio}, ${post},
+      <p style="text-align:right;line-height:1.35">Генеральному директору<br>
+        ООО «ПРОЕКТ 111»<br>Цибину Николаю Анатольевичу</p>
+      <h2 style="text-align:center;font-weight:bold;font-size:13pt;
+        margin:36px 0;letter-spacing:.06em">СЛУЖЕБНАЯ ЗАПИСКА</h2>
+      <p style="text-indent:1.25cm;text-align:justify;margin-bottom:10px">
+        В связи с нахождением в ежегодном отпуске ${v('replaceFio')}, ${v('post')},
         отдела новые рынки с ${dateFrom} по ${dateTo}, прошу возложить
-        обязанности в данный период на ${fio}, ${post}, отдела новые рынки
+        обязанности в данный период на ${v('fio')}, ${v('post')}, отдела новые рынки
         с оплатой в размере 30% от оклада. Выплату произвести вместе
-        с заработной платой за ${payMonth} ${payYear} г.
+        с заработной платой за ${payMonth} ${esc(d.payYear||'20___')} г.
       </p>
-
-      ${VAC_GAP6}
-
-      <p class="date-line">${dateLineRu}</p>
-
-      <p class="sign-role">Руководитель</p>
-      <p class="sign-line">________________________/Головко Н.Б./</p>
+      <p style="margin-top:36px">${dateLineRu}</p>
+      <p style="margin-top:24px">Руководитель</p>
+      <p>________________________/Головко Н.Б./</p>
     `;
   }
 
-  let currentVacHTML = '';
-
-  function renderVac() {
-    const d = collectVacData();
-    currentVacHTML = buildVacLetter(d);
-    $('vacPaper').innerHTML = currentVacHTML;
+  function render(){
+    const d = collect();
+    vacHtml = build(d);
+    $('vacPaper').innerHTML = vacHtml;
     $('btnVacDownload').disabled = false;
     $('btnVacPrint').disabled = false;
 
-    const missing = [];
-    if (!d.fio)        missing.push('Кто заменял');
-    if (!d.post)       missing.push('Должность');
-    if (!d.fromISO)    missing.push('дата «с»');
-    if (!d.toISO)      missing.push('дата «по»');
-    if (!d.replaceFio) missing.push('Кого заменял');
-    if (!d.payYear)    missing.push('год выплаты');
+    const miss = [];
+    if (!d.fio) miss.push('Кто заменял');
+    if (!d.post) miss.push('Должность');
+    if (!d.fromISO) miss.push('дата «с»');
+    if (!d.toISO) miss.push('дата «по»');
+    if (!d.replaceFio) miss.push('Кого заменял');
+    if (!d.payYear) miss.push('год');
 
     const s = $('vacStatus');
     s.style.display = 'block';
-    if (!missing.length) {
-      s.className = 'status ok';
-      s.innerHTML = '✓ Записка готова. Можно скачать или распечатать.';
-    } else {
-      s.className = 'status warn';
-      s.innerHTML = 'Не заполнено: <span class="miss">' + missing.join(', ') + '</span>.';
-    }
+    if (!miss.length){ s.className='status ok show'; s.textContent='✓ Записка готова.'; }
+    else { s.className='status warn show'; s.innerHTML='Не заполнено: <b>'+miss.join(', ')+'</b>'; }
   }
 
-  function downloadVac() {
-    const d = collectVacData();
-    const safeName = (d.replaceFio || d.fio || 'Служебная записка')
-      .replace(/[\\/:*?<>|]/g, '').trim().slice(0, 40) || 'Служебная записка';
-    downloadDoc(buildVacLetter(d), 'Служебная записка — ' + safeName + '.doc');
-  }
-
-  function printVac() {
-    renderVac();
-    const w = window.open('', '_blank');
-    w.document.write(`<html><head><meta charset="utf-8"><title>Служебная записка</title>
-      <style>
-        @page { size: A4; margin: 2cm 2cm 2cm 2.5cm; }
-        body { font-family: "Times New Roman", serif; font-size: 12pt; line-height: 1.5; }
-        p { margin: 0; }
-        .addressee { text-align: right; margin-bottom: 40px; line-height: 1.35; }
-        .title { text-align: center; font-weight: bold; font-size: 13pt; margin: 30px 0 40px; letter-spacing: .06em; }
-        .body { text-align: justify; text-indent: 1.25cm; margin-bottom: 10px; }
-        .date-line { margin-bottom: 22px; }
-        .sign-role { margin-bottom: 8px; }
-      </style></head><body>${currentVacHTML}</body></html>`);
-    w.document.close();
-    w.focus();
-    setTimeout(() => w.print(), 300);
-  }
-
-  $('btnVacCreate').addEventListener('click', renderVac);
-  $('btnVacDownload').addEventListener('click', downloadVac);
-  $('btnVacPrint').addEventListener('click', printVac);
-
-  ['vacFio','vacPost','vacFrom','vacTo','vacReplace','vacPayMonth','vacPayYear'].forEach(id => {
-    const el = $(id);
-    el.addEventListener('keydown', e => {
-      if (e.key === 'Enter') { e.preventDefault(); renderVac(); }
-    });
-    el.addEventListener('change', () => { if (currentVacHTML) renderVac(); });
+  $('btnVacCreate').addEventListener('click', render);
+  $('btnVacDownload').addEventListener('click', () => {
+    if (vacHtml) downloadDoc(vacHtml, 'Служебная записка.doc');
   });
-
+  $('btnVacPrint').addEventListener('click', () => {
+    if (vacHtml) openPrint(vacHtml, 'Служебная записка');
+  });
   $('btnVacClear').addEventListener('click', () => {
-    $('vacFio').value = '';
-    $('vacPost').value = '';
-    $('vacFrom').value = '';
-    $('vacTo').value = '';
-    $('vacReplace').value = '';
-    const now = new Date();
-    $('vacPayMonth').value = now.getMonth() + 1;
-    $('vacPayYear').value = now.getFullYear();
-    currentVacHTML = '';
+    ['vacFio','vacPost','vacFrom','vacTo','vacReplace'].forEach(id => $(id).value='');
+    $('vacPayMonth').value = new Date().getMonth()+1;
+    $('vacPayYear').value  = new Date().getFullYear();
+    vacHtml = '';
     $('vacPaper').innerHTML = '<div class="empty-hint">Выберите сотрудников и нажмите «Создать записку»</div>';
     $('btnVacDownload').disabled = true;
     $('btnVacPrint').disabled = true;
     $('vacStatus').style.display = 'none';
-    saveFormData(); // Сохраняем очищенное состояние
   });
+}
 
-  // ============================================================
-  //                 МОДУЛЬ 3: ОТГУЛ
-  // ============================================================
-  function collectOtgData() {
-    const fioSel  = $('otgFio');
-    const postSel = $('otgPost');
-    const fioOpt  = fioSel.selectedOptions[0];
-    const postOpt = postSel.selectedOptions[0];
+/* =====================================================
+   МОДУЛЬ 3: ОТГУЛ
+   ===================================================== */
+let otgHtml = '';
+
+function initOtgul(){
+  otgHtml = '';
+
+  function collect(){
+    const fioOpt  = $('otgFio').selectedOptions[0];
+    const postOpt = $('otgPost').selectedOptions[0];
     return {
-      fioNom   : fioSel.value,
-      fioGen   : (fioOpt  && fioOpt.dataset.gen)   || '',
-      fioShort : (fioOpt  && fioOpt.dataset.short) || '',
-      postNom  : postSel.value,
-      postGen  : (postOpt && postOpt.dataset.gen)  || '',
-      restISO  : $('otgRest').value,
-      overISO  : $('otgOver').value
+      fioNom  : $('otgFio').value,
+      fioGen  : fioOpt?.dataset.gen   || '',
+      fioShort: fioOpt?.dataset.short || '',
+      postNom : $('otgPost').value,
+      postGen : postOpt?.dataset.gen  || '',
+      restISO : $('otgRest').value,
+      overISO : $('otgOver').value
     };
   }
 
-  const OTG_FALLBACK = {
-    fioGen  : '__________________________',
-    fioShort: '__________________________',
-    postGen : '__________________________',
-    dateRest: '«___» ____________ 20___ года',
-    dateOver: '«___» ____________ 20___ года'
-  };
-
-  const OTG_TOP_GAP   = '<br><br><br><br><br><br>';
-  const OTG_SIGN_GAP  = '<br><br><br><br>';
-  const OTG_CHIEF_GAP = '<br><br><br><br>';
-
-  function buildOtgLetter(d) {
-    const todayRu = formatDateRu(new Date().toISOString().slice(0, 10));
-
-    const fioGen   = d.fioGen   ? esc(d.fioGen)   : OTG_FALLBACK.fioGen;
-    const fioShort = d.fioShort ? esc(d.fioShort) : OTG_FALLBACK.fioShort;
-    const postGen  = d.postGen  ? esc(d.postGen)  : OTG_FALLBACK.postGen;
-
-    const dateRest = d.restISO ? formatDateRuLong(d.restISO) : OTG_FALLBACK.dateRest;
-    const dateOver = d.overISO ? formatDateRuLong(d.overISO) : OTG_FALLBACK.dateOver;
+  function build(d){
+    const v = k => esc(d[k] || '__________________________');
+    const dateRest = d.restISO ? formatDateRu(d.restISO) : '«___» ____________ 20___ года';
+    const dateOver = d.overISO ? formatDateRu(d.overISO) : '«___» ____________ 20___ года';
+    const todayRu  = formatDateRu(new Date().toISOString().slice(0,10));
 
     return `
-      <p class="addressee">
+      <p style="text-align:right;line-height:1.35">
         Генеральному директору ООО «ПРОЕКТ 111»<br>
         Цибину Николаю Анатольевичу<br>
-        от ${fioGen}<br>
-        ${postGen} отдела Новые рынки
+        от ${v('fioGen')}<br>
+        ${v('postGen')} отдела Новые рынки
       </p>
-
-      ${OTG_TOP_GAP}
-
-      <p class="title">ЗАЯВЛЕНИЕ</p>
-
-      <p class="body">Прошу предоставить день отдыха ${dateRest} за отработанное
-        время в количестве ___ часов в выходной день/сверхурочно ${dateOver}</p>
-
-      ${OTG_SIGN_GAP}
-
-      <p class="sign-row">${todayRu} __________ ${fioShort}</p>
-
-      ${OTG_CHIEF_GAP}
-
-      <p class="chief-title">Непосредственный руководитель:</p>
-      <p class="chief-line">Руководитель&nbsp;&nbsp;&nbsp;&nbsp;_______________&nbsp;&nbsp;&nbsp;&nbsp;Головко Н.Б.</p>
+      <h2 style="text-align:center;font-weight:bold;font-size:13pt;
+        margin:40px 0;letter-spacing:.06em">ЗАЯВЛЕНИЕ</h2>
+      <p style="text-indent:1.25cm;text-align:justify">
+        Прошу предоставить день отдыха ${dateRest} за отработанное
+        время в количестве ___ часов в выходной день/сверхурочно ${dateOver}
+      </p>
+      <p style="margin-top:48px">${todayRu} __________ ${v('fioShort')}</p>
+      <p style="margin-top:48px">Непосредственный руководитель:</p>
+      <p>Руководитель&nbsp;&nbsp;&nbsp;&nbsp;_______________&nbsp;&nbsp;&nbsp;&nbsp;Головко Н.Б.</p>
     `;
   }
 
-  let currentOtgHTML = '';
-
-  function renderOtg() {
-    const d = collectOtgData();
-    currentOtgHTML = buildOtgLetter(d);
-    $('otgPaper').innerHTML = currentOtgHTML;
+  function render(){
+    const d = collect();
+    otgHtml = build(d);
+    $('otgPaper').innerHTML = otgHtml;
     $('btnOtgDownload').disabled = false;
     $('btnOtgPrint').disabled = false;
 
-    const missing = [];
-    if (!d.fioNom)  missing.push('ФИО');
-    if (!d.postNom) missing.push('Должность');
-    if (!d.restISO) missing.push('дата отдыха');
-    if (!d.overISO) missing.push('дата переработки');
-
+    const miss = [];
+    if (!d.fioNom)  miss.push('ФИО');
+    if (!d.postNom) miss.push('Должность');
+    if (!d.restISO) miss.push('дата отдыха');
+    if (!d.overISO) miss.push('дата переработки');
     const s = $('otgStatus');
     s.style.display = 'block';
-    if (!missing.length) {
-      s.className = 'status ok';
-      s.innerHTML = '✓ Заявление готово. Можно скачать или распечатать.';
-    } else {
-      s.className = 'status warn';
-      s.innerHTML = 'Не заполнено: <span class="miss">' + missing.join(', ') + '</span>.';
-    }
+    if (!miss.length){ s.className='status ok show'; s.textContent='✓ Заявление готово.'; }
+    else { s.className='status warn show'; s.innerHTML='Не заполнено: <b>'+miss.join(', ')+'</b>'; }
   }
 
-  function downloadOtg() {
-    const d = collectOtgData();
-    const safeName = (d.fioNom || 'Заявление').replace(/[\\/:*?<>|]/g, '').trim().slice(0, 40) || 'Заявление';
-    downloadDoc(buildOtgLetter(d), 'Заявление на отгул — ' + safeName + '.doc');
-  }
-
-  function printOtg() {
-    renderOtg();
-    const w = window.open('', '_blank');
-    w.document.write(`<html><head><meta charset="utf-8"><title>Заявление на отгул</title>
-      <style>
-        @page { size: A4; margin: 2cm 2cm 2cm 2.5cm; }
-        body { font-family: "Times New Roman", serif; font-size: 12pt; line-height: 1.5; }
-        p { margin: 0; }
-        .addressee { text-align: right; line-height: 1.35; }
-        .title { text-align: center; font-weight: bold; font-size: 13pt; letter-spacing: .06em; margin: 0; }
-        .body { text-align: justify; text-indent: 1.25cm; margin: 0; }
-        .sign-row { text-align: left; margin: 0; }
-        .chief-title { margin: 0; }
-        .chief-line { margin: 0; }
-      </style></head><body>${currentOtgHTML}</body></html>`);
-    w.document.close();
-    w.focus();
-    setTimeout(() => w.print(), 300);
-  }
-
-  $('btnOtgCreate').addEventListener('click', renderOtg);
-  $('btnOtgDownload').addEventListener('click', downloadOtg);
-  $('btnOtgPrint').addEventListener('click', printOtg);
-
-  ['otgFio','otgPost','otgRest','otgOver'].forEach(id => {
-    const el = $(id);
-    el.addEventListener('keydown', e => {
-      if (e.key === 'Enter') { e.preventDefault(); renderOtg(); }
-    });
-    el.addEventListener('change', () => { if (currentOtgHTML) renderOtg(); });
+  $('btnOtgCreate').addEventListener('click', render);
+  $('btnOtgDownload').addEventListener('click', () => {
+    if (otgHtml) downloadDoc(otgHtml, 'Заявление на отгул.doc');
   });
-
+  $('btnOtgPrint').addEventListener('click', () => {
+    if (otgHtml) openPrint(otgHtml, 'Заявление на отгул');
+  });
   $('btnOtgClear').addEventListener('click', () => {
-    $('otgFio').value = '';
-    $('otgPost').value = '';
-    $('otgRest').value = '';
-    $('otgOver').value = '';
-    currentOtgHTML = '';
+    ['otgFio','otgPost','otgRest','otgOver'].forEach(id => $(id).value='');
+    otgHtml = '';
     $('otgPaper').innerHTML = '<div class="empty-hint">Заполните поля слева и нажмите «Создать заявление»</div>';
     $('btnOtgDownload').disabled = true;
     $('btnOtgPrint').disabled = true;
     $('otgStatus').style.display = 'none';
-    saveFormData(); // Сохраняем очищенное состояние
   });
+}
 
-  // ============================================================
-  //              МОДУЛЬ 4: ОБРАБОТКА ПРАЙСА
-  // ============================================================
+/* =====================================================
+   МОДУЛЬ 4: ОБРАБОТКА ПРАЙСА
+   ===================================================== */
+let priceFile = null;
+let priceResult = null;
 
-  function priceNormHeader(s) {
-    return String(s == null ? '' : s)
-      .replace(/\u00A0/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim()
-      .toLowerCase();
-  }
-  function priceNormSimple(s) {
-    return String(s == null ? '' : s).trim().toLowerCase();
-  }
-  function priceFindHeader(row, name) {
+function initPrice(){
+  priceFile = null;
+  priceResult = null;
+
+  // --- утилиты ---
+  const normHeader = s => String(s ?? '').replace(/\u00A0/g,' ').replace(/\s+/g,' ').trim().toLowerCase();
+  const normSimple = s => String(s ?? '').trim().toLowerCase();
+
+  function findHeader(row, name){
     if (!row) return -1;
-    const target = priceNormHeader(name);
-    for (let i = 0; i < row.length; i++) {
-      if (priceNormHeader(row[i]) === target) return i;
-    }
+    const t = normHeader(name);
+    for (let i = 0; i < row.length; i++) if (normHeader(row[i]) === t) return i;
     return -1;
   }
 
-  function priceToNumber(v) {
-    if (v === null || v === undefined || v === '') return null;
+  function toNumber(v){
+    if (v == null || v === '') return null;
     if (typeof v === 'number') return isFinite(v) ? v : null;
-
-    let s = String(v).trim();
-    if (s === '') return null;
-    s = s.replace(/[\s\u00A0]/g, '');
-
-    const hasComma = s.indexOf(',') !== -1;
-    const hasDot   = s.indexOf('.') !== -1;
-
-    if (hasComma && hasDot) {
-      if (s.lastIndexOf(',') > s.lastIndexOf('.')) {
-        s = s.replace(/\./g, '').replace(',', '.');
-      } else {
-        s = s.replace(/,/g, '');
-      }
-    } else if (hasComma) {
-      const n = (s.match(/,/g) || []).length;
-      s = n > 1 ? s.replace(/,/g, '') : s.replace(',', '.');
+    let s = String(v).trim().replace(/[\s\u00A0]/g,'');
+    if (!s) return null;
+    const hasComma = s.includes(','), hasDot = s.includes('.');
+    if (hasComma && hasDot){
+      if (s.lastIndexOf(',') > s.lastIndexOf('.')) s = s.replace(/\./g,'').replace(',', '.');
+      else s = s.replace(/,/g,'');
+    } else if (hasComma){
+      const n = (s.match(/,/g)||[]).length;
+      s = n > 1 ? s.replace(/,/g,'') : s.replace(',', '.');
     }
-
     const x = parseFloat(s);
     return isNaN(x) ? null : x;
   }
 
-  function priceLooksLikeZip(bytes) {
-    return bytes.length > 2 && bytes[0] === 0x50 && bytes[1] === 0x4B;
+  function readWorkbook(buf){
+    const b = new Uint8Array(buf);
+    if (b.length > 2 && b[0] === 0x50 && b[1] === 0x4B)
+      return XLSX.read(buf, { type: 'array' });
+
+    // csv
+    let text;
+    if (b[0] === 0xEF && b[1] === 0xBB && b[2] === 0xBF)
+      text = new TextDecoder('utf-8').decode(b.subarray(3));
+    else if (b[0] === 0xFF && b[1] === 0xFE)
+      text = new TextDecoder('utf-16le').decode(b.subarray(2));
+    else {
+      try { text = new TextDecoder('utf-8',{fatal:true}).decode(b); }
+      catch { text = new TextDecoder('windows-1251').decode(b); }
+    }
+    return XLSX.read(text, { type: 'string', raw: true });
   }
 
-  function priceDecodeCsvBuffer(arrayBuffer) {
-    const bytes = new Uint8Array(arrayBuffer);
-    if (bytes[0] === 0xEF && bytes[1] === 0xBB && bytes[2] === 0xBF) {
-      return new TextDecoder('utf-8').decode(bytes.subarray(3));
-    }
-    if (bytes[0] === 0xFF && bytes[1] === 0xFE) {
-      return new TextDecoder('utf-16le').decode(bytes.subarray(2));
-    }
-    if (bytes[0] === 0xFE && bytes[1] === 0xFF) {
-      return new TextDecoder('utf-16be').decode(bytes.subarray(2));
-    }
-    try {
-      return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
-    } catch (e) {
-      return new TextDecoder('windows-1251').decode(bytes);
-    }
-  }
-
-  function priceReadWorkbook(arrayBuffer) {
-    const bytes = new Uint8Array(arrayBuffer);
-    if (priceLooksLikeZip(bytes)) {
-      return XLSX.read(arrayBuffer, { type: 'array' });
-    }
-    const text = priceDecodeCsvBuffer(arrayBuffer);
-    try {
-      return XLSX.read(text, { type: 'string', raw: true });
-    } catch (e) {
-      return XLSX.read(text, { type: 'string' });
-    }
-  }
-
-  function priceProcess(arrayBuffer, marginPercent, discountColName) {
-    const workbook = priceReadWorkbook(arrayBuffer);
-    const sheetName = workbook.SheetNames[0];
-    if (!sheetName) throw new Error('В файле нет ни одного листа.');
-
-    const ws = workbook.Sheets[sheetName];
-    const data = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: '' });
+  function process(buf, margin, colName){
+    const wb = readWorkbook(buf);
+    const sheet = wb.SheetNames[0];
+    if (!sheet) throw new Error('Нет листов в файле.');
+    const data = XLSX.utils.sheet_to_json(wb.Sheets[sheet], { header:1, raw:true, defval:'' });
     if (!data.length) throw new Error('Лист пустой.');
 
-    const staleCol = priceFindHeader(data[0], 'Залежалость');
-    const costCol  = priceFindHeader(data[0], 'СС из прайса');
-    const priceCol = priceFindHeader(data[0], discountColName);
+    const staleCol = findHeader(data[0], 'Залежалость');
+    const costCol  = findHeader(data[0], 'СС из прайса');
+    const priceCol = findHeader(data[0], colName);
+    if (staleCol < 0) throw new Error('Нет колонки «Залежалость».');
+    if (costCol  < 0) throw new Error('Нет колонки «СС из прайса».');
+    if (priceCol < 0) throw new Error('Нет колонки «' + colName + '».');
 
-    if (staleCol < 0) throw new Error('Не найден столбец «Залежалость».');
-    if (costCol  < 0) throw new Error('Не найден столбец «СС из прайса».');
-    if (priceCol < 0) throw new Error('Не найден столбец «' + discountColName + '».');
-
-    let processedCount = 0;
-    for (let r = 1; r < data.length; r++) {
-      const row = data[r];
-      if (!row) continue;
-
-      const staleVal = priceNormSimple(row[staleCol]);
-      if (staleVal !== 'залежалый' && staleVal !== 'очень залежалый') continue;
-
-      const cost = priceToNumber(row[costCol]);
-      if (cost === null) continue;
-
-      const calcPrice = cost * (1 + marginPercent / 100);
-      if (calcPrice === 0) continue;
-
-      const currentPrice = priceToNumber(row[priceCol]);
-      if (currentPrice === null || currentPrice === 0) {
-        row[priceCol] = calcPrice;
-      } else {
-        row[priceCol] = Math.min(calcPrice, currentPrice);
-      }
-      processedCount++;
+    let processed = 0;
+    for (let r = 1; r < data.length; r++){
+      const row = data[r]; if (!row) continue;
+      const sv = normSimple(row[staleCol]);
+      if (sv !== 'залежалый' && sv !== 'очень залежалый') continue;
+      const cost = toNumber(row[costCol]); if (cost === null) continue;
+      const calc = cost * (1 + margin / 100); if (!calc) continue;
+      const cur  = toNumber(row[priceCol]);
+      row[priceCol] = (cur === null || cur === 0) ? calc : Math.min(calc, cur);
+      processed++;
     }
 
-    // 1) Переименовываем "Цена EU" → "Цена РРЦ" (если такая колонка есть)
-    const euCol = priceFindHeader(data[0], 'Цена EU');
+    // переименования
+    const euCol = findHeader(data[0], 'Цена EU');
     if (euCol >= 0) data[0][euCol] = 'Цена РРЦ';
-
-    // 2) Переименовываем выбранную пользователем колонку скидки → "Цена со скидкой"
-    //    Это защищает её от удаления в списке ниже.
     data[0][priceCol] = 'Цена со скидкой';
 
-    // 3) Удаляем все остальные прайсовые колонки
-    const toDelete = [
-      'Опубликовано на сайте',
-      'Цена 18%',
-      'Цена 20%',
-      'Цена специалиста',
-      'Цена магистра',
-      'Цена доцента',
-      'Цена проф.',
-      'Цена гранд-проф.',
-      'Цена акад',
-      'Цена милл.',
-      'СС из прайса',
-      'Залежалость',
-      'Режим закупки',
-      'ID артикула'
-    ];
-
-    const delIdxs = [];
-    for (const name of toDelete) {
-      const idx = priceFindHeader(data[0], name);
-      if (idx >= 0) delIdxs.push(idx);
-    }
-    delIdxs.sort((a, b) => b - a);
-
-    for (const idx of delIdxs) {
-      for (let r = 0; r < data.length; r++) {
+    // удаления
+    const toDelete = ['Опубликовано на сайте','Цена 18%','Цена 20%',
+      'Цена специалиста','Цена магистра','Цена доцента','Цена проф.',
+      'Цена гранд-проф.','Цена акад','Цена милл.','СС из прайса',
+      'Залежалость','Режим закупки','ID артикула'];
+    const delIdxs = toDelete.map(n => findHeader(data[0], n)).filter(i => i >= 0).sort((a,b)=>b-a);
+    for (const idx of delIdxs)
+      for (let r = 0; r < data.length; r++){
         const row = data[r];
-        if (Array.isArray(row) && row.length > idx) row.splice(idx, 1);
+        if (Array.isArray(row) && row.length > idx) row.splice(idx,1);
       }
-    }
 
-    const articleCol = priceFindHeader(data[0], 'Код артикула');
-    if (articleCol >= 0) {
-      for (let r = 1; r < data.length; r++) {
-        const row = data[r];
-        if (!row || row[articleCol] == null) continue;
-        if (typeof row[articleCol] !== 'string') {
-          row[articleCol] = String(row[articleCol]);
-        }
-      }
+    // артикул в строку
+    const artCol = findHeader(data[0], 'Код артикула');
+    if (artCol >= 0) for (let r = 1; r < data.length; r++){
+      const row = data[r]; if (!row || row[artCol] == null) continue;
+      if (typeof row[artCol] !== 'string') row[artCol] = String(row[artCol]);
     }
-
-    ['Цена РРЦ', 'Цена со скидкой'].forEach(name => {
-      const col = priceFindHeader(data[0], name);
-      if (col < 0) return;
-      for (let r = 1; r < data.length; r++) {
-        const row = data[r];
-        if (!row) continue;
-        const v = row[col];
-        if (v === null || v === undefined || v === '') continue;
-        const n = priceToNumber(v);
-        if (n !== null) row[col] = n;
-      }
-    });
 
     const newWs = XLSX.utils.aoa_to_sheet(data);
-
-    const autofitNames = [
-      'Код артикула',
-      'Цена РРЦ',
-      'Цена со скидкой',
-      'Категория',
-      'Подкатегория',
-      'Ссылка на товар',
-      'Кол-во на складе'
-    ];
     newWs['!cols'] = data[0].map(() => ({ wch: 12 }));
-    for (const name of autofitNames) {
-      const c = priceFindHeader(data[0], name);
-      if (c < 0) continue;
-      let maxLen = String(data[0][c] || '').length;
-      for (let r = 0; r < data.length; r++) {
-        const row = data[r];
-        if (!row || row[c] == null) continue;
-        const len = String(row[c]).length;
-        if (len > maxLen) maxLen = len;
+    ['Код артикула','Цена РРЦ','Цена со скидкой','Категория',
+     'Подкатегория','Ссылка на товар','Кол-во на складе'].forEach(name => {
+      const c = findHeader(data[0], name); if (c < 0) return;
+      let maxLen = String(data[0][c]||'').length;
+      for (let r = 1; r < data.length; r++){
+        const row = data[r]; if (!row || row[c] == null) continue;
+        maxLen = Math.max(maxLen, String(row[c]).length);
       }
-      newWs['!cols'][c] = { wch: Math.min(maxLen + 2, 60) };
-    }
+      newWs['!cols'][c] = { wch: Math.min(maxLen+2, 60) };
+    });
 
-    if (newWs['!ref']) {
+    // стиль выравнивания
+    if (newWs['!ref']){
       const range = XLSX.utils.decode_range(newWs['!ref']);
-      const styleLeft = { alignment: { horizontal: 'left', vertical: 'center' } };
-      for (let R = range.s.r; R <= range.e.r; R++) {
-        for (let C = range.s.c; C <= range.e.c; C++) {
-          const addr = XLSX.utils.encode_cell({ r: R, c: C });
-          if (newWs[addr]) newWs[addr].s = styleLeft;
+      for (let R = range.s.r; R <= range.e.r; R++)
+        for (let C = range.s.c; C <= range.e.c; C++){
+          const addr = XLSX.utils.encode_cell({ r:R, c:C });
+          if (newWs[addr]) newWs[addr].s = { alignment:{ horizontal:'left', vertical:'center' } };
         }
-      }
     }
-
-    return { data, newWs, sheetName, processedCount, deletedCount: delIdxs.length };
+    return { data, newWs, sheet, processed, deleted: delIdxs.length };
   }
 
-  function renderPricePreview(result) {
+  function renderPreview(res){
     const wrap = $('pricePreviewWrap');
-    const rows = result.data;
-    if (!rows || !rows.length) {
-      wrap.innerHTML = '<div class="empty-hint" style="padding:60px 10px;margin-top:0;">Нет данных</div>';
-      return;
-    }
+    const rows = res.data;
+    if (!rows.length){ wrap.innerHTML = '<div class="empty-hint">Нет данных</div>'; return; }
     const PREVIEW = 20;
-    const totalRows = rows.length;
-    const showRows = rows.slice(0, Math.min(PREVIEW + 1, totalRows));
-
+    const shown = rows.slice(0, PREVIEW + 1);
     const th = '<th class="row-num">#</th>' +
-      showRows[0].map(h => '<th>' + esc(h == null ? '' : h) + '</th>').join('');
-    const tbody = showRows.slice(1).map((row, i) => {
+      shown[0].map(h => '<th>' + esc(h ?? '') + '</th>').join('');
+    const tbody = shown.slice(1).map((row,i) => {
       const tds = row.map(v => {
-        let txt = v == null ? '' : String(v);
-        if (typeof v === 'number') txt = String(v).replace('.', ',');
-        return '<td title="' + esc(txt) + '">' + esc(txt) + '</td>';
+        let t = v == null ? '' : String(v);
+        if (typeof v === 'number') t = String(v).replace('.', ',');
+        return '<td title="'+esc(t)+'">'+esc(t)+'</td>';
       }).join('');
-      return '<tr><td class="row-num">' + (i + 1) + '</td>' + tds + '</tr>';
+      return '<tr><td class="row-num">'+(i+1)+'</td>'+tds+'</tr>';
     }).join('');
-
-    const more = totalRows > PREVIEW + 1
-      ? '<div style="padding:10px 14px;color:#94a3b8;font-size:12px;">… ещё ' +
-        (totalRows - PREVIEW - 1) + ' строк в полном файле</div>'
+    const more = rows.length > PREVIEW + 1
+      ? '<div style="padding:10px 14px;color:#94a3b8;font-size:12px">… ещё '+(rows.length-PREVIEW-1)+' строк</div>'
       : '';
-
-    wrap.innerHTML =
-      '<table class="price-table"><thead><tr>' + th + '</tr></thead>' +
-      '<tbody>' + tbody + '</tbody></table>' + more;
+    wrap.innerHTML = '<table class="price-table"><thead><tr>'+th+'</tr></thead><tbody>'+tbody+'</tbody></table>'+more;
   }
 
-  let priceCurrentFile = null;
-  let priceLastResult  = null;
-
-  function setPriceStatus(html, kind) {
+  function setStatus(html, kind){
     const s = $('priceStatus');
-    if (!html) { s.style.display = 'none'; s.innerHTML = ''; return; }
+    if (!html){ s.style.display='none'; s.innerHTML=''; return; }
     s.style.display = 'block';
-    s.className = 'status ' + (kind || '');
+    s.className = 'status ' + (kind||'') + ' show';
     s.innerHTML = html;
   }
 
-  function handlePriceProcess() {
-    if (!priceCurrentFile) return;
-
+  function handleProcess(){
+    if (!priceFile) return;
     const margin = parseFloat($('priceMargin').value);
-    if (isNaN(margin)) {
-      setPriceStatus('Введите корректный процент наценки.', 'err');
-      return;
-    }
-
-    const discountColName = $('priceDiscount').value;
-    if (!discountColName) {
-      setPriceStatus('Выберите категорию скидки.', 'err');
-      return;
-    }
-
+    if (isNaN(margin)){ setStatus('Некорректный процент наценки.', 'err'); return; }
+    const colName = $('priceDiscount').value;
     $('btnPriceProcess').disabled = true;
     $('btnPriceProcess').textContent = 'Обработка…';
-    setPriceStatus('Читаем и обрабатываем файл…', '');
+    setStatus('Читаем файл…', 'warn');
 
     const reader = new FileReader();
-
-    reader.onload = (e) => {
+    reader.onload = e => {
       try {
-        const result = priceProcess(e.target.result, margin, discountColName);
-        priceLastResult = result;
-
-        renderPricePreview(result);
-
-        setPriceStatus(
-          '✓ Готово. Категория скидки: <b>' + esc(discountColName) +
-          '</b>. Обработано залежалых строк: <b>' + result.processedCount +
-          '</b>. Удалено столбцов: <b>' + result.deletedCount + '</b>.',
-          'ok'
-        );
-
+        const res = process(e.target.result, margin, colName);
+        priceResult = res;
+        renderPreview(res);
+        setStatus('✓ Готово. Категория: <b>'+esc(colName)+
+          '</b>. Обработано: <b>'+res.processed+'</b>. Удалено столбцов: <b>'+res.deleted+'</b>.', 'ok');
         $('btnPriceDownload').disabled = false;
-      } catch (err) {
+      } catch(err){
         console.error(err);
-        setPriceStatus('✗ ' + (err.message || 'Не удалось обработать файл.'), 'err');
+        setStatus('✗ ' + (err.message || 'Ошибка'), 'err');
         $('pricePreviewWrap').innerHTML =
-          '<div class="empty-hint" style="padding:60px 10px;margin-top:0;">Ошибка обработки</div>';
+          '<div class="empty-hint">Ошибка обработки</div>';
         $('btnPriceDownload').disabled = true;
       } finally {
         $('btnPriceProcess').disabled = false;
         $('btnPriceProcess').textContent = 'Обработать';
       }
     };
-
     reader.onerror = () => {
-      setPriceStatus('Не удалось прочитать файл.', 'err');
+      setStatus('Не удалось прочитать файл.', 'err');
       $('btnPriceProcess').disabled = false;
       $('btnPriceProcess').textContent = 'Обработать';
     };
-
-    reader.readAsArrayBuffer(priceCurrentFile);
+    reader.readAsArrayBuffer(priceFile);
   }
 
-  function handlePriceDownload() {
-    if (!priceLastResult) return;
+  $('priceFile').addEventListener('change', () => {
+    priceFile = $('priceFile').files[0] || null;
+    $('btnPriceProcess').disabled = !priceFile;
+    $('btnPriceDownload').disabled = true;
+    priceResult = null;
+    setStatus('');
+    if (!priceFile) $('pricePreviewWrap').innerHTML =
+      '<div class="empty-hint">Загрузите файл и нажмите «Обработать»</div>';
+  });
 
-    const newWb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(newWb, priceLastResult.newWs, priceLastResult.sheetName);
-    XLSX.writeFile(newWb, 'Прайс для Урсуса.xlsx', { cellStyles: true });
-  }
-
-  function handlePriceClear() {
-    priceCurrentFile = null;
-    priceLastResult  = null;
+  $('btnPriceProcess').addEventListener('click', handleProcess);
+  $('btnPriceDownload').addEventListener('click', () => {
+    if (!priceResult) return;
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, priceResult.newWs, priceResult.sheet);
+    XLSX.writeFile(wb, 'Прайс для Урсуса.xlsx', { cellStyles: true });
+  });
+  $('btnPriceClear').addEventListener('click', () => {
+    priceFile = null; priceResult = null;
     $('priceFile').value = '';
     $('priceMargin').value = 20;
     $('priceDiscount').value = 'Цена милл.';
     $('btnPriceProcess').disabled = true;
     $('btnPriceDownload').disabled = true;
-    $('pricePreviewWrap').innerHTML =
-      '<div class="empty-hint">Загрузите файл и нажмите «Обработать»</div>';
-    setPriceStatus('');
-    saveFormData(); // Сохраняем очищенное состояние
-  }
-
-  $('priceFile').addEventListener('change', () => {
-    priceCurrentFile = $('priceFile').files[0] || null;
-    $('btnPriceProcess').disabled = !priceCurrentFile;
-    $('btnPriceDownload').disabled = true;
-    priceLastResult = null;
-    setPriceStatus('');
-    if (!priceCurrentFile) {
-      $('pricePreviewWrap').innerHTML =
-        '<div class="empty-hint">Загрузите файл и нажмите «Обработать»</div>';
-    }
+    $('pricePreviewWrap').innerHTML = '<div class="empty-hint">Загрузите файл и нажмите «Обработать»</div>';
+    setStatus('');
   });
-
-  $('priceMargin').addEventListener('keydown', e => {
-    if (e.key === 'Enter') { e.preventDefault(); handlePriceProcess(); }
-  });
-
-  $('btnPriceProcess').addEventListener('click', handlePriceProcess);
-  $('btnPriceDownload').addEventListener('click', handlePriceDownload);
-  $('btnPriceClear').addEventListener('click', handlePriceClear);
-
-  // ============================================================
-  //                       СТАРТ
-  // ============================================================
-  const today = new Date();
-  // Устанавливаем дату по умолчанию только если поле пустое (чтобы не перезаписать сохраненную)
-  if (!$('dateInput').value) {
-    $('dateInput').value = today.toISOString().slice(0, 10);
-  }
-
-})();
+}
 </script>
 </body>
 </html>
