@@ -7,9 +7,6 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231c1c1e'/%3E%3Ctext x='32' y='45' font-family='Arial' font-size='34' font-weight='700' fill='%23fff' text-anchor='middle'%3EДК%3C/text%3E%3C/svg%3E">
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 
-<!-- ✅ users.js подключается ДО основного скрипта -->
-<script src="users.js"></script>
-
 <style>
 /* ============ ПЕРЕМЕННЫЕ / БАЗА ============ */
 :root{
@@ -28,27 +25,6 @@
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
 body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
-
-/* ============ ВХОД ============ */
-.login-screen{
-  position:fixed;inset:0;z-index:100;
-  display:flex;align-items:center;justify-content:center;
-  background:linear-gradient(160deg,#e9e9ef,#f7f7fa);padding:20px;
-}
-.login-screen.hidden{display:none}
-.login-card{
-  width:100%;max-width:360px;background:#fff;border-radius:28px;
-  padding:36px 28px;box-shadow:0 24px 60px rgba(0,0,0,.10);
-}
-.login-logo{
-  width:56px;height:56px;border-radius:16px;background:var(--dark);color:#fff;
-  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;
-  margin-bottom:18px;
-}
-.login-card h2{font-size:22px;margin:0 0 22px}
-.login-error{display:none;margin-bottom:12px;padding:10px 12px;border-radius:12px;
-  background:#ffe9e9;color:#a21b1b;font-size:12.5px;line-height:1.5}
-.login-error.show{display:block}
 
 /* ============ ПОЛЯ ============ */
 .field{margin-bottom:14px}
@@ -82,7 +58,6 @@ body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var
 
 /* ============ ПРИЛОЖЕНИЕ ============ */
 .app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
-.app.hidden{display:none}
 
 .sidebar{
   background:#fbfbfd;border-right:1px solid var(--line);
@@ -106,8 +81,6 @@ body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var
 .nav-btn:hover{background:#fff}
 .nav-btn.active{background:var(--dark);color:#fff}
 
-.sidebar-user{margin-top:auto;padding-top:14px;border-top:1px solid var(--line)}
-
 /* ============ MAIN ============ */
 .main{padding:32px 40px;overflow:auto}
 .page-head{margin-bottom:28px}
@@ -121,14 +94,10 @@ body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var
   padding:24px;box-shadow:var(--shadow);
 }
 .span-4{grid-column:span 4}
-.span-5{grid-column:span 5}
-.span-6{grid-column:span 6}
-.span-7{grid-column:span 7}
 .span-8{grid-column:span 8}
-.span-12{grid-column:span 12}
 
 @media (max-width:1200px){
-  .span-4,.span-5,.span-6,.span-7,.span-8{grid-column:span 12}
+  .span-4,.span-8{grid-column:span 12}
 }
 @media (max-width:900px){
   .app{grid-template-columns:1fr}
@@ -137,7 +106,6 @@ body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var
   .sidebar-brand{display:none}
   .nav{flex-direction:row}
   .nav-label{display:none}
-  .sidebar-user{margin:0;padding:0;border:none}
   .main{padding:20px}
   .page-head h1{font-size:32px}
 }
@@ -147,7 +115,6 @@ body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var
   border-radius:999px;font-size:11.5px;font-weight:600}
 .chip.yellow{background:var(--yellow)}
 .chip.blue{background:var(--blue)}
-.chip.pink{background:var(--pink)}
 
 .status{margin-top:14px;padding:12px 14px;border-radius:14px;
   font-size:12.5px;line-height:1.5;display:none}
@@ -183,30 +150,12 @@ body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var
 </head>
 <body>
 
-<!-- ================= ВХОД ================= -->
-<div class="login-screen" id="loginScreen">
-  <form class="login-card" id="loginForm">
-    <div class="login-logo">ДК</div>
-    <h2>Вход в систему</h2>
-    <div class="field">
-      <label for="loginUser">Логин</label>
-      <input id="loginUser" autocomplete="username" placeholder="введите логин">
-    </div>
-    <div class="field">
-      <label for="loginPass">Пароль</label>
-      <input id="loginPass" type="password" autocomplete="current-password" placeholder="введите пароль">
-    </div>
-    <div class="login-error" id="loginError"></div>
-    <button class="btn-primary" type="submit">Войти</button>
-  </form>
-</div>
-
-<!-- ================= ПРИЛОЖЕНИЕ ================= -->
-<div class="app hidden" id="app">
+<!-- ================= ПРИЛОЖЕНИЕ (сразу открыто) ================= -->
+<div class="app">
   <aside class="sidebar">
     <div class="sidebar-brand">
-      <div class="mark" id="sidebarAvatar">🐶</div>
-      <div class="title" id="sidebarUserName">Пользователь</div>
+      <div class="mark">🐶</div>
+      <div class="title">Документы</div>
     </div>
     <nav class="nav">
       <div class="nav-label">Документы</div>
@@ -215,9 +164,6 @@ body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var
       <button class="nav-btn" data-module="otgul">Отгул</button>
       <button class="nav-btn" data-module="price">Обработка прайса</button>
     </nav>
-    <div class="sidebar-user">
-      <button class="btn-ghost" id="btnLogout">Выйти</button>
-    </div>
   </aside>
 
   <main class="main" id="mainContent"></main>
@@ -227,7 +173,6 @@ body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var
 <!--           ШАБЛОНЫ МОДУЛЕЙ (HTML каждого)              -->
 <!-- ===================================================== -->
 
-<!-- МОДУЛЬ 1: ВЫВОД КОДОВ ЧЗ -->
 <template id="tpl-codes">
 <div class="page-head">
   <h1>Вывод кодов маркировки</h1>
@@ -272,7 +217,6 @@ body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var
 </div>
 </template>
 
-<!-- МОДУЛЬ 2: ЗАМЕЩЕНИЕ -->
 <template id="tpl-vacation">
 <div class="page-head">
   <h1>Замещение в отпуске</h1>
@@ -338,7 +282,6 @@ body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var
 </div>
 </template>
 
-<!-- МОДУЛЬ 3: ОТГУЛ -->
 <template id="tpl-otgul">
 <div class="page-head">
   <h1>Заявление на отгул</h1>
@@ -391,7 +334,6 @@ body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var
 </div>
 </template>
 
-<!-- МОДУЛЬ 4: ПРАЙС -->
 <template id="tpl-price">
 <div class="page-head">
   <h1>Обработка прайса</h1>
@@ -448,24 +390,6 @@ body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var
 
 <!-- ================= JS ================= -->
 <script>
-/* =====================================================
-   ✅ ПОЛЬЗОВАТЕЛИ ЧИТАЮТСЯ ИЗ users.js
-   Файл users.js подключён в <head> и кладёт объект в window.APP_USERS.
-   ===================================================== */
-const USERS = window.APP_USERS || {};
-
-if (!window.APP_USERS) {
-  console.error(
-    '❌ users.js не загружен. Проверьте:\n' +
-    ' 1) <script src="users.js"></script> в <head> НАД основным скриптом;\n' +
-    ' 2) файл лежит рядом с index.html;\n' +
-    ' 3) имя ровно "users.js";\n' +
-    ' 4) в users.js нет синтаксической ошибки.'
-  );
-} else {
-  console.log('✅ Пользователи загружены:', Object.keys(window.APP_USERS));
-}
-
 /* =====================================================
    COMMON — утилиты
    ===================================================== */
@@ -526,23 +450,8 @@ function openPrint(html, title){
 }
 
 /* =====================================================
-   APP — авторизация, навигация, модули
+   РЕЕСТР МОДУЛЕЙ И НАВИГАЦИЯ
    ===================================================== */
-const SESSION_KEY = 'dk_session_login';
-let currentUser = null;
-
-const loginScreen = $('loginScreen');
-const loginForm   = $('loginForm');
-const loginError  = $('loginError');
-const appEl       = $('app');
-const mainEl      = $('mainContent');
-
-function showErr(msg){
-  loginError.textContent = msg || '';
-  loginError.classList.toggle('show', !!msg);
-}
-
-/* --- РЕЕСТР МОДУЛЕЙ --- */
 const MODULES = {
   codes:    { tpl: 'tpl-codes',    init: initCodes },
   vacation: { tpl: 'tpl-vacation', init: initVacation },
@@ -550,11 +459,9 @@ const MODULES = {
   price:    { tpl: 'tpl-price',    init: initPrice }
 };
 
+const mainEl = $('mainContent');
+
 function switchModule(name){
-  if (currentUser) {
-    const u = USERS[currentUser];
-    if (!u || !u.views.includes(name)) return;
-  }
   document.querySelectorAll('.nav-btn').forEach(b =>
     b.classList.toggle('active', b.dataset.module === name));
 
@@ -568,73 +475,36 @@ function switchModule(name){
   mod.init();
 }
 
-function applySession(){
-  const user = USERS[currentUser];
-  if (!user) return;
-  loginScreen.classList.add('hidden');
-  appEl.classList.remove('hidden');
-  document.querySelectorAll('.nav-btn').forEach(btn => {
-    btn.style.display = user.views.includes(btn.dataset.module) ? '' : 'none';
-  });
-  $('sidebarUserName').textContent = user.name;
-  const first = [...document.querySelectorAll('.nav-btn')]
-    .find(b => b.style.display !== 'none');
-  if (first) switchModule(first.dataset.module);
-}
-
-function logout(){
-  localStorage.removeItem(SESSION_KEY);
-  currentUser = null;
-  appEl.classList.add('hidden');
-  loginScreen.classList.remove('hidden');
-  loginForm.reset();
-  showErr('');
-  $('loginUser').focus();
-}
-
-loginForm.addEventListener('submit', e => {
-  e.preventDefault();
-
-  const rawLogin = $('loginUser').value.trim();
-  const login    = rawLogin.toLowerCase();
-  const pass     = $('loginPass').value;
-  const user     = USERS[login];
-
-  console.log('🔐 Вход. Введено:', rawLogin, '| доступные логины:', Object.keys(USERS));
-
-  if (!login) { showErr('Введите логин.'); return; }
-
-  if (!user) {
-    showErr('Пользователь не найден. Доступные: ' + (Object.keys(USERS).join(', ') || '—'));
-    return;
-  }
-
-  if (user.password && user.password !== pass) {
-    showErr('Неверный пароль.');
-    $('loginPass').value = '';
-    $('loginPass').focus();
-    return;
-  }
-
-  currentUser = login;
-  localStorage.setItem(SESSION_KEY, login);
-  $('loginPass').value = '';
-  applySession();
-});
-
-$('btnLogout').addEventListener('click', logout);
 document.querySelectorAll('.nav-btn').forEach(btn =>
   btn.addEventListener('click', () => switchModule(btn.dataset.module)));
 
-// восстановление сессии
-(function(){
-  const saved = localStorage.getItem(SESSION_KEY);
-  if (saved && USERS[saved]) { currentUser = saved; applySession(); }
-  else { $('loginUser').focus(); }
+/* =====================================================
+   МОДУЛЬ 1: ВЫВОД КОДОВ ЧЗ
+   ===================================================== */
+const CHECKO_KEY = 'xETljoqfth6gO2yz';
+const URL_COMPANY = 'https://api.checko.ru/v2/company';
+const URL_IP      = 'https://api.checko.ru/v2/entrepreneur';
 
-  const EMOJI = ['🐶','🐱','🐭','🐹','🐰','🐻','🐼','🐨','🐯','🦁'];
-  $('sidebarAvatar').textContent = EMOJI[Math.floor(Math.random()*EMOJI.length)];
-})();
+let codesLastCompany = null;
+let codesLastHtml = '';
+
+function initCodes(){
+  codesLastCompany = null;
+  codesLastHtml = '';
+
+  const apiMsg = $('apiMsg');
+
+  function setMsg(text, kind){
+    apiMsg.textContent = text || '';
+    apiMsg.className = 'status' + (text ? ' show ' + (kind||'') : '');
+  }
+
+  function shortFio(full){
+    const p = String(full||'').trim().split(/\s+/).filter(Boolean);
+    if (p.length < 2) return full;
+    return p[0] + ' ' + p.slice(1).map(w => w[0].toUpperCase()+'.').join('');
+  }
+
   async function fetchCompany(inn){
     const isIp = String(inn).length === 12;
     const url = (isIp ? URL_IP : URL_COMPANY) +
@@ -766,7 +636,7 @@ document.querySelectorAll('.nav-btn').forEach(btn =>
   $('innInput').addEventListener('keydown', e => {
     if (e.key === 'Enter') { e.preventDefault(); handleFind(); }
   });
-  if (!$('dateInput').value)
+    if (!$('dateInput').value)
     $('dateInput').value = new Date().toISOString().slice(0,10);
 }
 
@@ -1171,6 +1041,11 @@ function initPrice(){
     setStatus('');
   });
 }
+
+/* =====================================================
+   СТАРТ: сразу открываем первый модуль
+   ===================================================== */
+switchModule('codes');
 </script>
 </body>
 </html>
