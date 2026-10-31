@@ -7,6 +7,9 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231c1c1e'/%3E%3Ctext x='32' y='45' font-family='Arial' font-size='34' font-weight='700' fill='%23fff' text-anchor='middle'%3EДК%3C/text%3E%3C/svg%3E">
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 
+<!-- ✅ users.js подключается ДО основного скрипта -->
+<script src="users.js"></script>
+
 <style>
 /* ============ ПЕРЕМЕННЫЕ / БАЗА ============ */
 :root{
@@ -44,7 +47,7 @@ body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var
 }
 .login-card h2{font-size:22px;margin:0 0 22px}
 .login-error{display:none;margin-bottom:12px;padding:10px 12px;border-radius:12px;
-  background:#ffe9e9;color:#a21b1b;font-size:12.5px}
+  background:#ffe9e9;color:#a21b1b;font-size:12.5px;line-height:1.5}
 .login-error.show{display:block}
 
 /* ============ ПОЛЯ ============ */
@@ -446,20 +449,22 @@ body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var
 <!-- ================= JS ================= -->
 <script>
 /* =====================================================
-   USERS.JS  (внутри файла)
+   ✅ ПОЛЬЗОВАТЕЛИ ЧИТАЮТСЯ ИЗ users.js
+   Файл users.js подключён в <head> и кладёт объект в window.APP_USERS.
    ===================================================== */
-window.APP_USERS = {
-  admin: {
-    password: "admin",
-    name: "Администратор",
-    views: ["codes","vacation","otgul","price"]
-  },
-  user: {
-    password: "user",
-    name: "Пользователь",
-    views: ["codes","otgul"]
-  }
-};
+const USERS = window.APP_USERS || {};
+
+if (!window.APP_USERS) {
+  console.error(
+    '❌ users.js не загружен. Проверьте:\n' +
+    ' 1) <script src="users.js"></script> в <head> НАД основным скриптом;\n' +
+    ' 2) файл лежит рядом с index.html;\n' +
+    ' 3) имя ровно "users.js";\n' +
+    ' 4) в users.js нет синтаксической ошибки.'
+  );
+} else {
+  console.log('✅ Пользователи загружены:', Object.keys(window.APP_USERS));
+}
 
 /* =====================================================
    COMMON — утилиты
@@ -523,7 +528,6 @@ function openPrint(html, title){
 /* =====================================================
    APP — авторизация, навигация, модули
    ===================================================== */
-const USERS = window.APP_USERS;
 const SESSION_KEY = 'dk_session_login';
 let currentUser = null;
 
@@ -538,18 +542,13 @@ function showErr(msg){
   loginError.classList.toggle('show', !!msg);
 }
 
-/* --- РЕЕСТР МОДУЛЕЙ ---
-   Каждый модуль = объект { html, init }
-   html — id <template>, init — функция привязки событий.
-*/
+/* --- РЕЕСТР МОДУЛЕЙ --- */
 const MODULES = {
   codes:    { tpl: 'tpl-codes',    init: initCodes },
   vacation: { tpl: 'tpl-vacation', init: initVacation },
   otgul:    { tpl: 'tpl-otgul',    init: initOtgul },
   price:    { tpl: 'tpl-price',    init: initPrice }
 };
-
-const initialized = new Set();
 
 function switchModule(name){
   if (currentUser) {
@@ -562,12 +561,10 @@ function switchModule(name){
   const mod = MODULES[name];
   if (!mod) return;
 
-  // вставляем HTML из шаблона
   const tpl = document.getElementById(mod.tpl);
   mainEl.innerHTML = '';
   mainEl.appendChild(tpl.content.cloneNode(true));
 
-  // init вызываем один раз на модуль (или каждый раз — на ваш выбор)
   mod.init();
 }
 
@@ -597,12 +594,28 @@ function logout(){
 
 loginForm.addEventListener('submit', e => {
   e.preventDefault();
-  const login = $('loginUser').value.trim().toLowerCase();
-  const pass  = $('loginPass').value;
-  const user  = USERS[login];
+
+  const rawLogin = $('loginUser').value.trim();
+  const login    = rawLogin.toLowerCase();
+  const pass     = $('loginPass').value;
+  const user     = USERS[login];
+
+  console.log('🔐 Вход. Введено:', rawLogin, '| доступные логины:', Object.keys(USERS));
+
   if (!login) { showErr('Введите логин.'); return; }
-  if (!user)  { showErr('Пользователь не найден.'); return; }
-  if (user.password && user.password !== pass) { showErr('Неверный пароль.'); return; }
+
+  if (!user) {
+    showErr('Пользователь не найден. Доступные: ' + (Object.keys(USERS).join(', ') || '—'));
+    return;
+  }
+
+  if (user.password && user.password !== pass) {
+    showErr('Неверный пароль.');
+    $('loginPass').value = '';
+    $('loginPass').focus();
+    return;
+  }
+
   currentUser = login;
   localStorage.setItem(SESSION_KEY, login);
   $('loginPass').value = '';
@@ -622,27 +635,6 @@ document.querySelectorAll('.nav-btn').forEach(btn =>
   const EMOJI = ['🐶','🐱','🐭','🐹','🐰','🐻','🐼','🐨','🐯','🦁'];
   $('sidebarAvatar').textContent = EMOJI[Math.floor(Math.random()*EMOJI.length)];
 })();
-
-/* =====================================================
-   МОДУЛЬ 1: ВЫВОД КОДОВ ЧЗ  (продолжение)
-   ===================================================== */
-function initCodes(){
-  codesLastCompany = null;
-  codesLastHtml = '';
-
-  const apiMsg = $('apiMsg');
-
-  function setMsg(text, kind){
-    apiMsg.textContent = text || '';
-    apiMsg.className = 'status' + (text ? ' show ' + (kind||'') : '');
-  }
-
-  function shortFio(full){
-    const p = String(full||'').trim().split(/\s+/).filter(Boolean);
-    if (p.length < 2) return full;
-    return p[0] + ' ' + p.slice(1).map(w => w[0].toUpperCase()+'.').join('');
-  }
-
   async function fetchCompany(inn){
     const isIp = String(inn).length === 12;
     const url = (isIp ? URL_IP : URL_COMPANY) +
@@ -752,7 +744,6 @@ function initCodes(){
     }
   }
 
-  // биндинги
   $('btnFind').addEventListener('click', handleFind);
   $('btnDownload').addEventListener('click', () => {
     if (codesLastHtml) downloadDoc(codesLastHtml, 'Информационное письмо.doc');
@@ -787,7 +778,6 @@ let vacHtml = '';
 function initVacation(){
   vacHtml = '';
 
-  // заполняем месяцы
   const monthSel = $('vacPayMonth');
   if (!monthSel.options.length){
     MONTHS_NOM.forEach((name,i) => {
@@ -971,7 +961,6 @@ function initPrice(){
   priceFile = null;
   priceResult = null;
 
-  // --- утилиты ---
   const normHeader = s => String(s ?? '').replace(/\u00A0/g,' ').replace(/\s+/g,' ').trim().toLowerCase();
   const normSimple = s => String(s ?? '').trim().toLowerCase();
 
@@ -1004,7 +993,6 @@ function initPrice(){
     if (b.length > 2 && b[0] === 0x50 && b[1] === 0x4B)
       return XLSX.read(buf, { type: 'array' });
 
-    // csv
     let text;
     if (b[0] === 0xEF && b[1] === 0xBB && b[2] === 0xBF)
       text = new TextDecoder('utf-8').decode(b.subarray(3));
@@ -1043,12 +1031,10 @@ function initPrice(){
       processed++;
     }
 
-    // переименования
     const euCol = findHeader(data[0], 'Цена EU');
     if (euCol >= 0) data[0][euCol] = 'Цена РРЦ';
     data[0][priceCol] = 'Цена со скидкой';
 
-    // удаления
     const toDelete = ['Опубликовано на сайте','Цена 18%','Цена 20%',
       'Цена специалиста','Цена магистра','Цена доцента','Цена проф.',
       'Цена гранд-проф.','Цена акад','Цена милл.','СС из прайса',
@@ -1060,7 +1046,6 @@ function initPrice(){
         if (Array.isArray(row) && row.length > idx) row.splice(idx,1);
       }
 
-    // артикул в строку
     const artCol = findHeader(data[0], 'Код артикула');
     if (artCol >= 0) for (let r = 1; r < data.length; r++){
       const row = data[r]; if (!row || row[artCol] == null) continue;
@@ -1080,7 +1065,6 @@ function initPrice(){
       newWs['!cols'][c] = { wch: Math.min(maxLen+2, 60) };
     });
 
-    // стиль выравнивания
     if (newWs['!ref']){
       const range = XLSX.utils.decode_range(newWs['!ref']);
       for (let R = range.s.r; R <= range.e.r; R++)
